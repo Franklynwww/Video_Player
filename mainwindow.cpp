@@ -1,0 +1,671 @@
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+#include"utils.h"
+#include<QFileDialog>
+#include<QString>
+#include <QFile>
+#include<QMessageBox>
+
+
+enum Except{ EXCEP_ZERO,EXCEP_ONE};
+
+MainWindow::MainWindow(QWidget *parent) :
+    QMainWindow(parent),
+    ui(new Ui::MainWindow)
+{
+    ui->setupUi(this);
+    //设置主界面背景
+    QPixmap pixmap(":/images/all.jpg");
+    QPalette palette;
+    palette.setBrush(backgroundRole(),QBrush(pixmap));
+    setPalette(palette);
+//    ui->centralWidget->setStyleSheet("background-image:url(:/images/play.png);background-repeat:no-repeat;");
+    //创建mediaplayer
+    //先禁止最大化
+    setWindowFlags(windowFlags() &~ Qt::WindowMaximizeButtonHint);
+    mediaplayer = new QMediaPlayer(this);
+    //设置对应mediaplayer的QVideoWidget
+    mediaplayer->setVideoOutput(ui->widget);
+    //设置播放按钮
+    ui->toolButton->setToolTip("播放");
+    ui->toolButton->setAutoRaise(false);
+    ui->toolButton->setIcon(QPixmap(":/images/play.png"));
+    //设置打开文件按钮
+    ui->toolButton_2->setToolTip("打开文件");
+    ui->toolButton_2->setAutoRaise(true);
+    ui->toolButton_2->setIcon(QPixmap(":/images/openfile.png"));
+    //设置ListWidget
+    //设置其他地方按钮
+    ui->toolButton_3->setText("下一首");
+    ui->toolButton_4->setText("上一首");
+    ui->label->setText(": : :");
+    ui->label_2->setText(": : :");
+
+//    ui->listWidget->setStyleSheet(
+//    "QListWidget::item{background-color:rgba(255,255,255,1);border-width:2px;border-radius:4px;margin:4px 0px 0px 0px;}"
+//    "QListWidget::item:hover{background-color:rgba(223,223,223,0.9);}"
+//    "QListWidget::item::selected:active{background-color:rgba(220,220,220,1);color:black;}"
+//    );
+
+    //设置播放属性
+    //1、监听信号变化函数,signal为内置的信号函数stateChanged，slot为自己定义的槽函数mediaStateChanged
+    connect(mediaplayer,SIGNAL(stateChanged(QMediaPlayer::State)),this,SLOT(mediaStateChanged(QMediaPlayer::State))); //播放状态变化
+    //2、播放进度信号变化函数,signal为内置的信号函数positionChanged，slot为自己定义的槽函数postionChanged(qint64)
+    connect(mediaplayer,SIGNAL(positionChanged(qint64)),this,SLOT(postionChanged(qint64))); //播放进度变化
+    //3、媒体播放信号长度变化
+    connect(mediaplayer,SIGNAL(durationChanged(qint64)),this,SLOT(durationChanged(qint64))); //信号长度
+    //4、处理错误,signal为内置的信号函数error，slot为自己定义的槽函数handleError()
+    connect(mediaplayer,SIGNAL(error(QMediaPlayer::Error)),this,SLOT(handleError()));
+    //5.当内存中的playList发生变化且文件同时进行重写后，重新渲染ListWidget
+    connect(this,SIGNAL(playListChanged(void)),this,SLOT(reloadListWidget()));
+
+    this->filepath = QDir::currentPath()+"/playList.txt";
+    qDebug()<<this->filepath;
+    //检查是否有文件
+    QFile file(this->filepath);
+    if(file.exists())
+    {
+        qDebug()<<"文件存在";
+    }else{
+       qDebug()<<"文件不存在,正在新建文件.";
+       file.open( QIODevice::ReadWrite | QIODevice::Text );
+       file.close();
+    }
+
+    initPlayList();
+
+
+
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+void MainWindow::play(){
+    switch (this->mediaplayer->state()) {
+    case QMediaPlayer::PlayingState: //Playing状态
+        this->mediaplayer->pause();
+
+        break;
+    default:  // Pause或者Stop状态
+        this->mediaplayer->play();
+        break;
+    }
+}
+
+void MainWindow::on_toolButton_clicked()
+{
+    play();
+//    switch (this->mediaplayer->state()) {
+//    case QMediaPlayer::PlayingState:
+//        ui->toolButton->setToolTip("暂停");
+//        ui->toolButton->setIcon(QPixmap(":/images/pause.png"));
+//        break;
+//    default:
+//        ui->toolButton->setToolTip("播放");
+//        ui->toolButton->setIcon(QPixmap(":/images/play.png"));
+//        break;
+//    }
+}
+
+void MainWindow::mediaStateChanged(QMediaPlayer::State state){//槽函数，触发条件：视频状态改变
+    //
+    switch (state) {
+    case QMediaPlayer::PlayingState://Playing状态
+        ui->toolButton->setToolTip("暂停");
+        ui->toolButton->setIcon(QPixmap(":/images/pause.png"));
+        break;
+    default://Pause或者Stop状态
+        ui->toolButton->setToolTip("播放");
+        ui->toolButton->setIcon(QPixmap(":/images/play.png"));
+        break;
+    }
+}
+
+void MainWindow::postionChanged(qint64 position){//槽函数，触发条件：视频进度自动改变
+    //
+    qDebug()<<position;
+    ui->label_2->setText(transfer_to_std_time(position));
+    ui->horizontalSlider->setValue(position);
+}
+
+void MainWindow::setPosition(int position){
+    //
+    mediaplayer->setPosition(position);
+    
+}
+
+void MainWindow::durationChanged(qint64 duration){ //槽函数，触发条件：视频时长改变
+    //
+    qDebug()<<duration;
+    ui->label->setText(transfer_to_std_time(duration));
+    ui->horizontalSlider->setRange(0,duration); 
+}
+
+void MainWindow::on_horizontalSlider_sliderMoved(int position) //槽函数，触发条件：主动移动进度条
+{
+    this->setPosition(position);
+}
+
+//播放异常的抛出
+void MainWindow::handleError()
+{
+    //如果出现错误播放不了
+//    ui->toolButton->setEnabled(false);
+
+    qDebug() << "有错误发生了！";
+}
+
+void MainWindow::on_toolButton_2_clicked()
+{
+    QString filename;
+    QT_TRY{
+        filename = QFileDialog::getOpenFileName();
+        if (filename == ""){
+            return;
+        }
+        if(!isValidVideoFile(filename)){
+            QMessageBox::warning(this, tr("Error"),
+                                           tr("打开的文件不是音频格式")
+                                           );
+            return;
+        }
+        mediaplayer->setMedia(QUrl::fromLocalFile(filename));
+
+        ui->toolButton->setAutoRaise(true);
+        this->mediaplayer->play();
+    }
+    QT_CATCH(QMediaPlayer::Error e){
+        qDebug()<<"出错了";
+        return;
+    }
+
+    ui->toolButton->setEnabled(true);
+    this->addInPlayList(filename);
+
+
+}
+
+
+
+void MainWindow::initPlayList(){
+    //读取播放列表，加载到playList
+    QFile file;
+    QStringList fonts;
+    QString line;
+//    qDebug()<<path;
+    file.setFileName(this->filepath);
+    if(file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+//      QByteArray t ;
+      while(!file.atEnd())
+      {
+          line = file.readLine();
+          line.remove("\n");
+          fonts<<line;
+          qDebug()<<line;
+      }
+      file.close();
+
+    }
+    else{
+        qDebug()<<"文件读取出错";
+    }
+    this->playList = fonts;
+    this->current_index = -1;
+    emit playListChanged();
+
+//    ui->listWidget->addItems(fonts);//把各行添加到listwidget
+}
+
+bool MainWindow::findInPlayList(QString filename){
+    return this->playList.indexOf(filename) != -1;
+}
+
+void MainWindow::deleteInPlayList(QString filename){
+    this->playList.removeOne(filename);
+    emit playListChanged();
+}
+
+void MainWindow::addInPlayList(QString filename){
+    if (filename == ""){
+        return;
+    }
+    if (isValidVideoFile(filename) == false){
+         QMessageBox::warning(this, tr("Error"),
+                                        tr("打开的文件不是音频格式")
+                                        );
+        return;
+
+    }
+
+    if (this->findInPlayList(filename)){
+        this->playList.removeOne(filename);
+        this->playList.insert(0,filename);
+        this->current_index = 0;
+        emit playListChanged();
+    }
+    else{
+        qDebug()<<"添加的文件名字"<<filename;
+        this->playList.insert(0,filename);
+        this->current_index = 0;
+        emit playListChanged();
+    }
+}
+
+//void MainWindow::addFile(QString filename){
+
+//    QString cnt = filename;
+//    QFile file(this->filepath);
+//    file.open(QIODevice::Append|QIODevice::ReadWrite);
+//    QTextStream out(&file);//写入
+//    out << cnt << endl;
+//    file.close();
+
+//}
+
+void MainWindow::rewriteFile(){
+    QFile file(this->filepath);
+    file.resize(0);
+    file.open(QIODevice::ReadWrite);
+    QTextStream out(&file);//写入
+    qDebug()<<"写入前的list"<<playList;
+    for (int i =0 ;i<this->playList.length();i++){
+        QString cnt = this->playList[i] + "\n";
+        out<<cnt;
+    }
+    file.close();
+}
+
+void MainWindow::reloadListWidget(){
+    ui->listWidget->clear();
+    QStringList widget_list;
+    for(int i=0;i<this->playList.length();i++){
+        QString l = "";
+        int lastIndex = ((QString)this->playList[i]).lastIndexOf("/");
+        for (int j = lastIndex+1;j<this->playList[i].length();j++){
+            l += this->playList[i][j];
+        }
+        l+="\n";
+        l+="(";
+        l+=playList[i];
+        l+=")";
+        widget_list.append(l);
+    }
+    ui->listWidget->addItems(widget_list);//把各行添加到listwidget
+
+    for(int i = 0;i<this->playList.length();i++){
+        if (i == this->current_index){
+            ui->listWidget->item(i)->setTextColor(QColor(125,125,125));
+        }
+        else{
+            ui->listWidget->item(i)->setTextColor(QColor(0,0,0));
+        }
+    }
+
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+
+{
+
+QMessageBox::StandardButton button;
+
+    button=QMessageBox::question(this,tr("退出程序"),QString(tr("确认退出程序")),QMessageBox::Yes|QMessageBox::No);
+
+    if(button==QMessageBox::No)
+
+    {
+
+        event->ignore(); // 忽略退出信号，程序继续进行
+
+    }
+
+    else if(button==QMessageBox::Yes)
+
+    {
+
+        event->accept(); // 接受退出信号，程序退出
+
+    }
+
+
+    qDebug()<<"最后的list"<<playList;
+
+    //TODO: 在退出窗口之前，实现希望做的操作
+    rewriteFile();
+
+}
+
+
+void MainWindow::on_listWidget_doubleClicked(const QModelIndex &index)
+{
+    this->current_index = index.row();
+    QString item_text = ui->listWidget->item(this->current_index)->text();
+//    qDebug()<<item_text;
+
+    QString filename = "";
+    int line_change = item_text.lastIndexOf("\n");
+
+    for(int j = line_change+2;j<item_text.length()-1;j++){
+        filename += item_text[j];
+    }
+    qDebug()<<filename;
+    QFile file(filename);
+    if(file.exists())
+    {
+        qDebug()<<"文件存在";
+        this->mediaplayer->setMedia(QUrl::fromLocalFile(filename));
+        this->play();
+        for(int i = 0;i<this->playList.length();i++){
+            if (i == this->current_index){
+                ui->listWidget->item(i)->setTextColor(QColor(125,125,125));
+            }
+            else{
+                ui->listWidget->item(i)->setTextColor(QColor(0,0,0));
+            }
+        }
+    }else{
+       qDebug()<<"文件不存在.";
+       QMessageBox::warning(this, tr("Error"),
+                                      tr("打开的文件已不存在")
+                                      );
+       this->playList.removeOne(filename);
+
+       emit playListChanged();
+
+    }
+
+}
+
+void MainWindow::on_toolButton_3_clicked()
+{
+    if (this->current_index == -1){
+        return;
+    }
+    getNextAccessible(this->current_index+1);
+//    int len = this->playList.length();
+//    QString nextfilename = this->playList[(this->current_index+1)%len];
+//    QFile file(nextfilename);
+//    if(file.exists())
+//    {
+//        qDebug()<<"文件存在";
+//        this->current_index = (this->current_index+1)%len;
+//        this->mediaplayer->setMedia(QUrl::fromLocalFile(nextfilename));
+//        this->play();
+//        for(int i = 0;i<this->playList.length();i++){
+//            if (i == this->current_index){
+//                ui->listWidget->item(i)->setTextColor(QColor(125,125,125));
+//            }
+//            else{
+//                ui->listWidget->item(i)->setTextColor(QColor(0,0,0));
+//            }
+//        }
+//    }else{
+//       qDebug()<<"文件不存在.";
+//       QMessageBox::warning(this, tr("Error"),
+//                                      tr("下一首的文件已不存在")
+//                                      );
+//       this->playList.removeOne(nextfilename);
+//       emit playListChanged();
+
+//    }
+}
+
+void MainWindow::on_toolButton_4_clicked()
+{
+    if (this->current_index == -1){
+        return;
+    }
+    getPreviousAccessible(this->current_index-1);
+//    int len = this->playList.length();
+//    QString prefilename = this->playList[(this->current_index-1+len)%len];
+//    QFile file(prefilename);
+//    if(file.exists())
+//    {
+//        qDebug()<<"文件存在";
+//        this->current_index = (this->current_index-1+len)%len;
+//        this->mediaplayer->setMedia(QUrl::fromLocalFile(prefilename));
+//        this->play();
+//        for(int i = 0;i<this->playList.length();i++){
+//            if (i == this->current_index){
+//                ui->listWidget->item(i)->setTextColor(QColor(125,125,125));
+//            }
+//            else{
+//                ui->listWidget->item(i)->setTextColor(QColor(0,0,0));
+//            }
+//        }
+//    }else{
+//       qDebug()<<"文件不存在.";
+//       QMessageBox::warning(this, tr("Error"),
+//                                      tr("下一首的文件已不存在")
+//                                      );
+//       this->playList.removeOne(prefilename);
+//       qDebug()<<"删除后的playList"<<playList;
+//       emit playListChanged();
+
+//    }
+
+}
+
+void MainWindow::on_listWidget_customContextMenuRequested(const QPoint &pos)
+{
+
+    QListWidgetItem* curItem = ui->listWidget->itemAt(pos);
+    if( curItem == NULL )
+        return;
+
+    QMenu *popMenu = new QMenu( this );
+    QAction *deleteItem = new QAction(tr("Delete"), this);
+//    QAction *clearSeeds = new QAction(tr("Clear"), this);
+    popMenu->addAction( deleteItem );
+//    popMenu->addAction( clearSeeds );
+    connect( deleteItem, SIGNAL(triggered() ), this, SLOT( deleteItemSlot()) );
+//    connect( clearSeeds, SIGNAL(triggered() ), this, SLOT( clearSeedsSlot()) );
+    popMenu->exec( QCursor::pos() );
+//    delete popMenu;
+//    delete deleteSeed;
+//    delete clearSeeds;
+}
+
+
+void MainWindow::deleteItemSlot(){
+    int ch = QMessageBox::warning(NULL, "Warning",
+                                  "您确定要删除吗 ?",
+                                  QMessageBox::Yes | QMessageBox::No,
+                                  QMessageBox::No);
+
+    if ( ch != QMessageBox::Yes )
+        return;
+
+    QListWidgetItem * item = ui->listWidget->currentItem();
+    if( item == NULL )
+        return;
+
+    int curIndex = ui->listWidget->row(item);
+    this->playList.removeAt(curIndex);
+    emit playListChanged();
+//    if (this->playList.length() == 0){
+//        this->mediaplayer->setMedia(NULL);
+//        this->current_index = -1;
+//        this->play();
+//        return;
+//    }
+    if(this->current_index==curIndex){
+        getNextAccessible(curIndex);
+    }
+
+
+
+//    if (this->current_index == curIndex){
+//        while (this->playList.length()>=1){
+//            int len = this->playList.length();
+//            qDebug()<<"删除前的playList"<<this->playList;
+//            qDebug()<<"删除的id"<<this->current_index;
+//            QString nextfilename = this->playList[this->current_index];
+//            qDebug()<<"下一首"<<nextfilename;
+//            QFile file(nextfilename);
+//            if(file.exists())
+//            {
+//                qDebug()<<"文件存在";
+//                this->current_index = this->current_index;
+//                this->mediaplayer->setMedia(QUrl::fromLocalFile(nextfilename));
+//                this->play();
+//                for(int i = 0;i<this->playList.length();i++){
+//                    if (i == this->current_index){
+//                        ui->listWidget->item(i)->setTextColor(QColor(125,125,125));
+//                    }
+//                    else{
+//                        ui->listWidget->item(i)->setTextColor(QColor(0,0,0));
+//                    }
+//                }
+//                break;
+//            }else{
+//               qDebug()<<"文件不存在.";
+//               QMessageBox::warning(this, tr("Error"),
+//                                              tr("下一首的文件已不存在")
+//                                              );
+//               this->playList.removeOne(nextfilename);
+//               emit playListChanged();
+
+//            }
+//        }
+//        if (this->playList.length()==0){
+//            this->mediaplayer->setMedia(NULL);
+//            this->current_index = -1;
+//            this->play();
+//        }
+//    }
+//    else
+//        ;
+
+
+
+}
+
+void MainWindow::getNextAccessible(int first_index){
+    qDebug()<<"first_index"<<first_index;
+    int cur_index = first_index;
+    while (cur_index<this->playList.length()){
+        QString nextfilename = this->playList[cur_index];
+        QFile file(nextfilename);
+        if (file.exists()){
+            this->current_index = cur_index;
+            this->mediaplayer->setMedia(QUrl::fromLocalFile(nextfilename));
+            this->play();
+            for(int i = 0;i<this->playList.length();i++){
+                if (i == this->current_index){
+                    ui->listWidget->item(i)->setTextColor(QColor(125,125,125));
+                }
+                else{
+                    ui->listWidget->item(i)->setTextColor(QColor(0,0,0));
+                }
+            }
+            emit playListChanged();
+            return;
+        }
+        else{
+            this->playList.removeAt(cur_index);
+        }
+
+    }
+    cur_index = 0;
+    while (this->playList.length()>0){
+        QString nextfilename = this->playList[cur_index];
+        QFile file(nextfilename);
+        if (file.exists()){
+            this->current_index = cur_index;
+            this->mediaplayer->setMedia(QUrl::fromLocalFile(nextfilename));
+            this->play();
+            for(int i = 0;i<this->playList.length();i++){
+                if (i == this->current_index){
+                    ui->listWidget->item(i)->setTextColor(QColor(125,125,125));
+                }
+                else{
+                    ui->listWidget->item(i)->setTextColor(QColor(0,0,0));
+                }
+            }
+            emit playListChanged();
+            return;
+        }
+        else{
+            this->playList.removeAt(cur_index);
+        }
+    }
+    if (this->playList.length() == 0){
+        this->mediaplayer->setMedia(NULL);
+        this->current_index = -1;
+        this->play();
+        emit playListChanged();
+        return;
+    }
+
+
+
+
+}
+
+void MainWindow::getPreviousAccessible(int first_index){
+    int cur_index = first_index;
+    while (cur_index>=0 && this->playList.length()>0){
+        QString prefilename = this->playList[cur_index];
+        QFile file(prefilename);
+        if (file.exists()){
+            this->current_index = cur_index;
+            this->mediaplayer->setMedia(QUrl::fromLocalFile(prefilename));
+            this->play();
+            for(int i = 0;i<this->playList.length();i++){
+                if (i == this->current_index){
+                    ui->listWidget->item(i)->setTextColor(QColor(125,125,125));
+                }
+                else{
+                    ui->listWidget->item(i)->setTextColor(QColor(0,0,0));
+                }
+            }
+            emit playListChanged();
+            return;
+        }
+        else{
+            this->playList.removeAt(cur_index);
+            cur_index --;
+        }
+
+    }
+    cur_index = this->playList.length() - 1;
+    while (this->playList.length()>0){
+        QString prefilename = this->playList[cur_index];
+        QFile file(prefilename);
+        if (file.exists()){
+            this->current_index = cur_index;
+            this->mediaplayer->setMedia(QUrl::fromLocalFile(prefilename));
+            this->play();
+            for(int i = 0;i<this->playList.length();i++){
+                if (i == this->current_index){
+                    ui->listWidget->item(i)->setTextColor(QColor(125,125,125));
+                }
+                else{
+                    ui->listWidget->item(i)->setTextColor(QColor(0,0,0));
+                }
+            }
+            emit playListChanged();
+            return;
+        }
+        else{
+            this->playList.removeAt(cur_index);
+            cur_index --;
+        }
+
+    }
+
+    if (this->playList.length() == 0){
+        this->mediaplayer->setMedia(NULL);
+        this->current_index = -1;
+        this->play();
+        emit playListChanged();
+        return;
+    }
+
+}
+
