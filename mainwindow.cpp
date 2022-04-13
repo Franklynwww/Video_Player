@@ -5,6 +5,7 @@
 #include<QString>
 #include <QFile>
 #include<QMessageBox>
+#include<QMediaMetaData>
 
 
 enum Except{ EXCEP_ZERO,EXCEP_ONE};
@@ -13,6 +14,8 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+
+
     ui->setupUi(this);
     //设置主界面背景
     QPixmap pixmap(":/images/all.jpg");
@@ -59,6 +62,8 @@ MainWindow::MainWindow(QWidget *parent) :
     //5.当内存中的playList发生变化且文件同时进行重写后，重新渲染ListWidget
     connect(this,SIGNAL(playListChanged(void)),this,SLOT(reloadListWidget()));
 
+    //6. 获取文件信息
+    connect(this->mediaplayer, SIGNAL(metaDataChanged()), this, SLOT(updateInfo()));
     this->filepath = QDir::currentPath()+"/playList.txt";
     qDebug()<<this->filepath;
     //检查是否有文件
@@ -71,6 +76,22 @@ MainWindow::MainWindow(QWidget *parent) :
        file.open( QIODevice::ReadWrite | QIODevice::Text );
        file.close();
     }
+
+    //添加播放速度下拉选择
+    QStringList plsySpdItems;
+    plsySpdItems << "×0.5";
+    plsySpdItems << "×0.8";
+    plsySpdItems << "×1";
+    plsySpdItems << "×1.2";
+    plsySpdItems << "×1.5";
+    plsySpdItems << "×2";
+    plsySpdItems << "×3";
+    plsySpdItems << "×4";
+//    QComboBox* comboBoxPlaySpd = new QComboBox();
+    ui->comboBox->setToolTip("倍速选择");
+    ui->comboBox->addItems(plsySpdItems);//添加倍速选项
+    ui->comboBox->setCurrentIndex(2);//设置默认速度1
+//    ui->comboBox->setEditable(false);//设置为不可编辑
 
     initPlayList();
 
@@ -93,6 +114,9 @@ void MainWindow::play(){
         this->mediaplayer->play();
         break;
     }
+//    qDebug()<<3333;
+
+
 }
 
 void MainWindow::on_toolButton_clicked()
@@ -126,7 +150,7 @@ void MainWindow::mediaStateChanged(QMediaPlayer::State state){//槽函数，触�
 
 void MainWindow::postionChanged(qint64 position){//槽函数，触发条件：视频进度自动改变
     //
-    qDebug()<<position;
+//    qDebug()<<position;
     ui->label_2->setText(transfer_to_std_time(position));
     ui->horizontalSlider->setValue(position);
 }
@@ -139,7 +163,7 @@ void MainWindow::setPosition(int position){
 
 void MainWindow::durationChanged(qint64 duration){ //槽函数，触发条件：视频时长改变
     //
-    qDebug()<<duration;
+//    qDebug()<<duration;
     ui->label->setText(transfer_to_std_time(duration));
     ui->horizontalSlider->setRange(0,duration); 
 }
@@ -669,3 +693,61 @@ void MainWindow::getPreviousAccessible(int first_index){
 
 }
 
+
+
+void MainWindow::on_horizontalSlider_sliderPressed()
+{
+
+}
+
+void MainWindow::on_horizontalSlider_actionTriggered(int action)
+{
+
+    QSize q = ui->horizontalSlider->size();
+    qDebug()<<this->mouse_x;
+    qDebug()<<q.width();
+
+}
+
+void MainWindow::mouseReleaseEvent(QMouseEvent *event)
+{
+    this->mouse_x = event->x();
+    this->mouse_y = event->y();
+
+}
+
+void MainWindow::on_comboBox_currentIndexChanged(const QString &arg1)
+{
+
+    int const current_index = ui->comboBox->currentIndex();
+//    ui->comboBox->setCurrentIndex(current_index);//设置默认速度1
+//    qDebug()<<current_index;
+    QString current_text = arg1;
+    qDebug()<<current_text;
+    QString speed_val = "";
+    for (int var = 1; var < current_text.length(); ++var) {
+        speed_val+=current_text[var];
+    }
+    this->mediaplayer->setPlaybackRate(qreal(speed_val.toFloat()));
+
+
+
+}
+
+void MainWindow::updateInfo(){
+    ui->textBrowser->clear();
+    qDebug()<<this->mediaplayer->isMetaDataAvailable();
+//        qDebug()<<this->mediaplayer->metaData(QMediaMetaData::AlbumTitle).toString();
+    foreach(QString str,this->mediaplayer->availableMetaData()){
+        QString info = str + ":";
+        qDebug()<<str<<"   :"<<this->mediaplayer->metaData(str).toString().toUtf8().data();
+        QString  data = this->mediaplayer->metaData(str).toString().toUtf8().data();
+        info += data;
+        if (str == "Duration"){
+            info += "ms";
+            info += "("+transfer_to_std_time(data.toInt())+")";
+        }
+        ui->textBrowser->append(info);
+    }
+//    ui->textBrowser->setText(info);
+}

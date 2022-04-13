@@ -44,3 +44,26 @@ RESOURCES += \
     video_player.qrc
 
 CONFIG += exceptions
+
+
+
+win32: {
+    FFMPEG_HOME=$$PWD/ffmpeg
+    #设置 ffmpeg 的头文件
+    INCLUDEPATH += $$FFMPEG_HOME/include
+
+    #设置导入库的目录一边程序可以找到导入库
+    # -L ：指定导入库的目录
+    # -l ：指定要导入的 库名称
+    LIBS +=  -L$$FFMPEG_HOME/lib \
+             -lavcodec \
+             -lavdevice \
+             -lavfilter \
+            -lavformat \
+            -lavutil \
+            -lpostproc \
+            -lswresample \
+            -lswscale
+}
+
+

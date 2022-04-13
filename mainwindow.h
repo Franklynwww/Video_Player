@@ -6,6 +6,7 @@
 #include<QMediaPlayer>
 #include<QCloseEvent>
 
+
 namespace Ui {
 class MainWindow;
 }
@@ -24,6 +25,8 @@ private:
     QString filepath; // 文件
     QStringList playList;//播放列表
     int current_index;
+    int mouse_x;
+    int mouse_y;
 
     void initPlayList();
     void deleteInPlayList(QString filename);
@@ -36,6 +39,8 @@ private:
 
     void getNextAccessible(int first_index);
     void getPreviousAccessible(int first_index);
+
+    void mouseReleaseEvent(QMouseEvent *event);
 
 signals:
     void playListChanged();
@@ -70,6 +75,11 @@ private slots:
     void on_listWidget_customContextMenuRequested(const QPoint &pos);
 
     void deleteItemSlot();
+    void on_horizontalSlider_sliderPressed();
+    void on_horizontalSlider_actionTriggered(int action);
+    void on_comboBox_currentIndexChanged(const QString &arg1);
+
+    void updateInfo();
 };
 
 #endif // MAINWINDOW_H

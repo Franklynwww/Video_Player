@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>518</width>
-    <height>300</height>
+    <width>690</width>
+    <height>307</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -63,7 +63,7 @@
    <widget class="QToolButton" name="toolButton_2">
     <property name="geometry">
      <rect>
-      <x>380</x>
+      <x>390</x>
       <y>260</y>
       <width>31</width>
       <height>21</height>
@@ -82,9 +82,9 @@
    <widget class="QListWidget" name="listWidget">
     <property name="geometry">
      <rect>
-      <x>420</x>
+      <x>430</x>
       <y>10</y>
-      <width>91</width>
+      <width>111</width>
       <height>241</height>
      </rect>
     </property>
@@ -95,10 +95,10 @@
    <widget class="QToolButton" name="toolButton_3">
     <property name="geometry">
      <rect>
-      <x>420</x>
+      <x>430</x>
       <y>260</y>
-      <width>32</width>
-      <height>16</height>
+      <width>51</width>
+      <height>21</height>
      </rect>
     </property>
     <property name="text">
@@ -108,10 +108,10 @@
    <widget class="QToolButton" name="toolButton_4">
     <property name="geometry">
      <rect>
-      <x>480</x>
+      <x>490</x>
       <y>260</y>
-      <width>32</width>
-      <height>16</height>
+      <width>51</width>
+      <height>21</height>
      </rect>
     </property>
     <property name="text">
@@ -123,7 +123,7 @@
      <rect>
       <x>340</x>
       <y>250</y>
-      <width>41</width>
+      <width>51</width>
       <height>16</height>
      </rect>
     </property>
@@ -134,9 +134,9 @@
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>290</x>
+      <x>280</x>
       <y>250</y>
-      <width>41</width>
+      <width>51</width>
       <height>16</height>
      </rect>
     </property>
@@ -157,14 +157,40 @@
      <string>/</string>
     </property>
    </widget>
+   <widget class="QComboBox" name="comboBox">
+    <property name="geometry">
+     <rect>
+      <x>570</x>
+      <y>260</y>
+      <width>61</width>
+      <height>21</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QTextBrowser" name="textBrowser">
+    <property name="geometry">
+     <rect>
+      <x>550</x>
+      <y>10</y>
+      <width>131</width>
+      <height>241</height>
+     </rect>
+    </property>
+    <property name="horizontalScrollBarPolicy">
+     <enum>Qt::ScrollBarAsNeeded</enum>
+    </property>
+    <property name="lineWrapMode">
+     <enum>QTextEdit::NoWrap</enum>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>518</width>
-     <height>17</height>
+     <width>690</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menufile">
