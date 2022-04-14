@@ -5,6 +5,7 @@
 #include<QVideoWidget>
 #include<QMediaPlayer>
 #include<QCloseEvent>
+#include"VideoSurface.h"
 
 
 namespace Ui {
@@ -22,6 +23,8 @@ public:
 private:
     Ui::MainWindow *ui;
     QMediaPlayer * mediaplayer;
+    VideoSurface * videosurface;
+
     QString filepath; // 文件
     QStringList playList;//播放列表
     int current_index;
@@ -40,7 +43,14 @@ private:
     void getNextAccessible(int first_index);
     void getPreviousAccessible(int first_index);
 
+    void back();
+    void forward();
+
     void mouseReleaseEvent(QMouseEvent *event);
+    void mouseMoveEvent(QMouseEvent *event);
+    bool eventFilter(QObject *obj, QEvent *e);
+
+
 
 signals:
     void playListChanged();
@@ -80,6 +90,16 @@ private slots:
     void on_comboBox_currentIndexChanged(const QString &arg1);
 
     void updateInfo();
+
+    void ProcessFrame(QVideoFrame &frame);
+
+    void presentframe(const QVideoFrame & frame);
+
+    void keyPressEvent(QKeyEvent *e);
+
+
+    void on_toolButton_5_clicked();
+    void on_toolButton_6_clicked();
 };
 
 #endif // MAINWINDOW_H

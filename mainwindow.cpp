@@ -6,6 +6,10 @@
 #include <QFile>
 #include<QMessageBox>
 #include<QMediaMetaData>
+#include <QEvent>
+#include <QMouseEvent>
+#include <QKeyEvent>
+
 
 
 enum Except{ EXCEP_ZERO,EXCEP_ONE};
@@ -15,7 +19,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
 
-
+    this->grabKeyboard();
     ui->setupUi(this);
     //设置主界面背景
     QPixmap pixmap(":/images/all.jpg");
@@ -43,6 +47,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->toolButton_4->setText("上一首");
     ui->label->setText(": : :");
     ui->label_2->setText(": : :");
+    ui->toolButton_5->setToolTip("快退");
+    ui->toolButton_5->setIcon(QPixmap(":/images/back.png"));
+    ui->toolButton_6->setToolTip("快进");
+    ui->toolButton_6->setIcon(QPixmap(":/images/forward.png"));
+
 
 //    ui->listWidget->setStyleSheet(
 //    "QListWidget::item{background-color:rgba(255,255,255,1);border-width:2px;border-radius:4px;margin:4px 0px 0px 0px;}"
@@ -64,6 +73,17 @@ MainWindow::MainWindow(QWidget *parent) :
 
     //6. 获取文件信息
     connect(this->mediaplayer, SIGNAL(metaDataChanged()), this, SLOT(updateInfo()));
+    // 7.获取鼠标移动事件
+    this->setMouseTracking(true);
+    this->centralWidget()->setMouseTracking(true);
+    ui->widget->setMouseTracking(true);
+
+    // 8. 获取鼠标点击事件
+    ui->horizontalSlider->installEventFilter(this);
+    ui->horizontalSlider->setMouseTracking(true);
+    // 9. 刷新列表
+    connect(this,SIGNAL(playListChanged(void)),this,SLOT(reloadListWidget()));
+
     this->filepath = QDir::currentPath()+"/playList.txt";
     qDebug()<<this->filepath;
     //检查是否有文件
@@ -93,7 +113,12 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->comboBox->setCurrentIndex(2);//设置默认速度1
 //    ui->comboBox->setEditable(false);//设置为不可编辑
 
-    initPlayList();
+//    this->mediaplayer->setMedia(QUrl::fromLocalFile("D:/images/0.jpg"));
+//    this->play();
+
+
+
+      initPlayList();
 
 
 
@@ -108,9 +133,12 @@ void MainWindow::play(){
     switch (this->mediaplayer->state()) {
     case QMediaPlayer::PlayingState: //Playing状态
         this->mediaplayer->pause();
-
         break;
     default:  // Pause或者Stop状态
+//        VideoSurface * v = new VideoSurface();
+//        this->mediaplayer->setVideoOutput(v);
+//        this->mediaplayer->setMuted(true);
+//        connect(v, SIGNAL(frameAvailable(QVideoFrame &)), this, SLOT(ProcessFrame(QVideoFrame &)));
         this->mediaplayer->play();
         break;
     }
@@ -703,9 +731,9 @@ void MainWindow::on_horizontalSlider_sliderPressed()
 void MainWindow::on_horizontalSlider_actionTriggered(int action)
 {
 
-    QSize q = ui->horizontalSlider->size();
-    qDebug()<<this->mouse_x;
-    qDebug()<<q.width();
+//    QSize q = ui->horizontalSlider->size();
+//    qDebug()<<this->mouse_x;
+//    qDebug()<<q.width();
 
 }
 
@@ -750,4 +778,137 @@ void MainWindow::updateInfo(){
         ui->textBrowser->append(info);
     }
 //    ui->textBrowser->setText(info);
+}
+
+
+void MainWindow::ProcessFrame(QVideoFrame &frame)
+{
+    static int count = 0;
+    qDebug() << "=============ProcessFrame===============";
+    qDebug() << "width : " << frame.width() << " height : " << frame.height();
+    qDebug() << "start time : " << frame.startTime()/1000 << "ms";
+    qDebug() << "end time : " << frame.endTime()/1000 << "ms";
+    qDebug() << "pixelFormat :" << frame.pixelFormat();
+
+    frame.map(QAbstractVideoBuffer::ReadOnly);
+    QImage recvImage(frame.bits(), frame.width(), frame.height(), QVideoFrame::imageFormatFromPixelFormat(frame.pixelFormat()));
+    recvImage.save(QString("D:/images/%1.jpg").arg(count++), "JPG");
+    qDebug() << "frame data size :" << frame.mappedBytes();
+//    update();
+    frame.unmap();
+}
+
+//实现mouseMoveEvent
+void MainWindow::mouseMoveEvent(QMouseEvent *event){
+//    qDebug()<<"ok";
+//    // 判断鼠标是否在pushButton上
+//    if (ui->horizontalSlider->geometry().contains(this->mapFromGlobal(QCursor::pos())))
+//    {
+//        // do something...
+//        qDebug()<<111;
+//    }
+//    emit mouseMoved(event);
+}
+
+
+
+
+//使用eventFilter实现mousePressEvent
+bool MainWindow::eventFilter(QObject *obj, QEvent *e)
+{
+    if (obj == ui->horizontalSlider)
+    {
+        if (e->type() == QEvent::MouseButtonPress){
+           int mouse_x = static_cast<QMouseEvent *>(e)->x();
+//           qDebug()<<mouse_x;
+//           qDebug()<<ui->horizontalSlider->width();
+//           qDebug()<<ui->horizontalSlider->maximum();
+           qint64 position = mouse_x*ui->horizontalSlider->maximum()/ui->horizontalSlider->width();
+//           qDebug()<<position;
+//           ui->horizontalSlider->setValue(position);
+           this->mediaplayer->setPosition(position);
+//            emit mousePress(e);
+//           QPixmap pixmap(":/images/all.jpg");
+//           QPalette palette;
+//           palette.setBrush(backgroundRole(),QBrush(pixmap));
+//           ui->horizontalSlider->setPalette(palette);
+        }
+    }
+    return QWidget::eventFilter(obj,e);
+}
+
+void MainWindow::presentframe(const QVideoFrame & frame){
+    qDebug()<<"present frame";
+    QVideoFrame frametodraw(frame);
+    if(!frametodraw.map(QAbstractVideoBuffer::ReadOnly))
+        return;
+    QImage img = QImage(frame.bits(),
+                frame.width(),
+                frame.height(),
+                frame.bytesPerLine(),
+                QVideoFrame::imageFormatFromPixelFormat(frametodraw.pixelFormat())
+                //QImage::Format_RGB32
+                );
+    img = img.mirrored(false, true);//图像垂直翻转(图像是倒置的，调用该函数可正置。同时该函数也解决了频繁的内存错误引起的崩溃, 原因不明)
+    qDebug()<<img.size();
+    //这里可以分析或编辑图像后再输出显示视频
+    //视频的显示则利用重写paintEvent()函数来绘制实现。还可以直接将图像设置到label控件中，也会形成视频。
+    update();                       //通知Qt重绘
+
+    frametodraw.unmap();
+
+
+}
+
+void MainWindow::back(){
+    qint64 old_position = this->mediaplayer->position();
+    qint64 new_position = old_position - 1000;
+    if (new_position < 0){
+        return;
+    }
+    this->mediaplayer->setPosition(new_position);
+}
+
+void MainWindow::forward(){
+    qint64 old_position = this->mediaplayer->position();
+    qint64 new_position = old_position + 1000;
+    if (new_position > this->mediaplayer->duration()){
+        return;
+    }
+    this->mediaplayer->setPosition(new_position);
+}
+
+void MainWindow::keyPressEvent(QKeyEvent *e)
+{
+    QString key_info = QKeySequence(e->modifiers() + e->key()).toString();
+    qDebug()<<key_info;
+    if (this->current_index == -1){
+        return;
+    }
+    if (key_info == "Space"){
+        qDebug()<<111111111111;
+        this->play();
+    }
+    if (key_info == "Down"){
+        getNextAccessible(this->current_index+1);
+    }
+    if (key_info == "Up"){
+        getPreviousAccessible(this->current_index-1);
+    }
+    if (key_info=="Left"){
+        back();
+    }
+    if (key_info == "Right"){
+        forward();
+    }
+}
+
+void MainWindow::on_toolButton_5_clicked()
+{
+    back();
+}
+
+void MainWindow::on_toolButton_6_clicked()
+{
+    forward();
 }

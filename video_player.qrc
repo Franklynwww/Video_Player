@@ -6,5 +6,7 @@
         <file>images/play.png</file>
         <file>images/prev.png</file>
         <file>images/Qplayer.ico</file>
+        <file>images/forward.png</file>
+        <file>images/back.png</file>
     </qresource>
 </RCC>

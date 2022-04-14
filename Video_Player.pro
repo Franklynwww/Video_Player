@@ -27,12 +27,14 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += \
+    VideoSurface.cpp \
         main.cpp \
         mainwindow.cpp \
     utils.cpp \
     openfilethread.cpp
 
 HEADERS += \
+    VideoSurface.h \
         mainwindow.h \
     utils.h \
     openfilethread.h
