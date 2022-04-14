@@ -272,8 +272,8 @@ void MainWindow::initPlayList(){
 //    ui->listWidget->addItems(fonts);//把各行添加到listwidget
 }
 
-bool MainWindow::findInPlayList(QString filename){
-    return this->playList.indexOf(filename) != -1;
+int MainWindow::findInPlayList(QString filename){
+    return playList.indexOf(filename);
 }
 
 void MainWindow::deleteInPlayList(QString filename){
@@ -293,10 +293,8 @@ void MainWindow::addInPlayList(QString filename){
 
     }
 
-    if (this->findInPlayList(filename)){
-        this->playList.removeOne(filename);
-        this->playList.insert(0,filename);
-        this->current_index = 0;
+    if (this->findInPlayList(filename) != -1){
+        this->current_index = this->findInPlayList(filename);
         emit playListChanged();
     }
     else{

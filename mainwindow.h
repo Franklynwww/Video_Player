@@ -33,7 +33,7 @@ private:
 
     void initPlayList();
     void deleteInPlayList(QString filename);
-    bool findInPlayList(QString filename);
+    int findInPlayList(QString filename);
     void addInPlayList(QString filename);
     void setFirseInPlayList(int index);
 
