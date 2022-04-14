@@ -535,17 +535,25 @@ void MainWindow::deleteItemSlot(){
         return;
 
     int curIndex = ui->listWidget->row(item);
+    QString ori_filename = this->playList[this->current_index];
     this->playList.removeAt(curIndex);
-    emit playListChanged();
+
+    qDebug()<<"curIndex"<<curIndex;
+    qDebug()<<"this->current_index"<<this->current_index;
 //    if (this->playList.length() == 0){
 //        this->mediaplayer->setMedia(NULL);
 //        this->current_index = -1;
 //        this->play();
 //        return;
 //    }
-    if(this->current_index==curIndex){
+    if (this->current_index != curIndex){
+        this->current_index = this->playList.indexOf(ori_filename);
+        emit playListChanged();
+    }
+    else{
         getNextAccessible(curIndex);
     }
+
 
 
 
