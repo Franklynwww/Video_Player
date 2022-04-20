@@ -5,7 +5,11 @@
 #include<QVideoWidget>
 #include<QMediaPlayer>
 #include<QCloseEvent>
-#include"VideoSurface.h"
+#include<QAudioOutput>
+
+#include"openfilethread.h"
+#include"ReverseDecode.h"
+#include"ReverseDecode_Audio.h"
 
 
 namespace Ui {
@@ -21,15 +25,24 @@ public:
     ~MainWindow();
 
 private:
+    ReverseDecode DecodeWork;
+    ReverseDecode_Audio DecodeWorkAudio;
     Ui::MainWindow *ui;
     QMediaPlayer * mediaplayer;
-    VideoSurface * videosurface;
+    QMediaPlayer* mediaplayer2;
 
     QString filepath; // 文件
     QStringList playList;//播放列表
     int current_index;
     int mouse_x;
     int mouse_y;
+    qint64 reverse_duration;
+    qint64 pause_time;
+    qint64 last_begin_to_reverse;
+    QString file_reverse;
+
+//    static QAudioOutput        *audioOutput;
+//    static QIODevice           *streamOut;
 
     void initPlayList();
     void deleteInPlayList(QString filename);
@@ -85,6 +98,8 @@ private slots:
     void on_listWidget_customContextMenuRequested(const QPoint &pos);
 
     void deleteItemSlot();
+    void reverseItemSlot();
+
     void on_horizontalSlider_sliderPressed();
     void on_horizontalSlider_actionTriggered(int action);
     void on_comboBox_currentIndexChanged(const QString &arg1);
@@ -100,6 +115,18 @@ private slots:
 
     void on_toolButton_5_clicked();
     void on_toolButton_6_clicked();
+    void on_toolButton_7_clicked();
+    void on_toolButton_8_clicked();
+    void on_verticalSlider_sliderMoved(int position);
+    void on_listWidget_currentTextChanged(const QString &currentText);
+    void on_toolButton_9_clicked();
+
+    void threadFinished();
+
+    void slotGetCurrentTime(qint64);
+    void on_horizontalSlider_2_sliderMoved(int position);
+
+    void on_horizontalSlider_2_valueChanged(int value);
 };
 
 #endif // MAINWINDOW_H

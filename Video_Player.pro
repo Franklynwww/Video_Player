@@ -27,6 +27,10 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += \
+    ReverseDecode.cpp \
+    ReverseDecode_AuDio.cpp \
+    VideoFrameDisplay.cpp \
+    VideoJPG.cpp \
     VideoSurface.cpp \
         main.cpp \
         mainwindow.cpp \
@@ -34,6 +38,10 @@ SOURCES += \
     openfilethread.cpp
 
 HEADERS += \
+    ReverseDecode.h \
+    ReverseDecode_Audio.h \
+    VideoFrameDisplay.h \
+    VideoJPG.h \
     VideoSurface.h \
         mainwindow.h \
     utils.h \

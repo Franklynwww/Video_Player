@@ -3,12 +3,17 @@
 
 #include<QThread>
 #include<QString>
+#include<QMediaPlayer>
+#include"VideoSurface.h"
 
 class OpenFileThread:public QThread{
     Q_OBJECT
 public:
-    int signal;
+    int position;
     QString filename;
+    QMediaPlayer * mediaplayer;
+    void run() override;
+
 
 };
 

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>690</width>
-    <height>307</height>
+    <width>774</width>
+    <height>322</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,10 +23,26 @@
      <rect>
       <x>10</x>
       <y>10</y>
-      <width>401</width>
+      <width>431</width>
       <height>241</height>
      </rect>
     </property>
+    <widget class="VideoFrameDisplay" name="widget_2" native="true">
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>50</y>
+       <width>331</width>
+       <height>161</height>
+      </rect>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>111</height>
+      </size>
+     </property>
+    </widget>
    </widget>
    <widget class="QSlider" name="horizontalSlider">
     <property name="geometry">
@@ -34,7 +50,7 @@
       <x>130</x>
       <y>260</y>
       <width>321</width>
-      <height>21</height>
+      <height>16</height>
      </rect>
     </property>
     <property name="orientation">
@@ -82,9 +98,9 @@
    <widget class="QListWidget" name="listWidget">
     <property name="geometry">
      <rect>
-      <x>430</x>
+      <x>460</x>
       <y>10</y>
-      <width>111</width>
+      <width>121</width>
       <height>241</height>
      </rect>
     </property>
@@ -170,9 +186,9 @@
    <widget class="QTextBrowser" name="textBrowser">
     <property name="geometry">
      <rect>
-      <x>550</x>
+      <x>590</x>
       <y>10</y>
-      <width>131</width>
+      <width>121</width>
       <height>241</height>
      </rect>
     </property>
@@ -221,13 +237,136 @@
      </size>
     </property>
    </widget>
+   <widget class="QToolButton" name="toolButton_7">
+    <property name="geometry">
+     <rect>
+      <x>690</x>
+      <y>260</y>
+      <width>21</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>...</string>
+    </property>
+   </widget>
+   <widget class="QSlider" name="verticalSlider">
+    <property name="geometry">
+     <rect>
+      <x>720</x>
+      <y>150</y>
+      <width>20</width>
+      <height>101</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Vertical</enum>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_4">
+    <property name="geometry">
+     <rect>
+      <x>143</x>
+      <y>231</y>
+      <width>51</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>TextLabel</string>
+    </property>
+   </widget>
+   <widget class="QToolButton" name="toolButton_8">
+    <property name="geometry">
+     <rect>
+      <x>720</x>
+      <y>260</y>
+      <width>41</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>...</string>
+    </property>
+   </widget>
+   <widget class="QToolButton" name="toolButton_9">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>260</y>
+      <width>31</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>...</string>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>72</width>
+      <height>72</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QSlider" name="horizontalSlider_2">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>260</y>
+      <width>401</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_5">
+    <property name="geometry">
+     <rect>
+      <x>320</x>
+      <y>250</y>
+      <width>54</width>
+      <height>12</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>TextLabel</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_6">
+    <property name="geometry">
+     <rect>
+      <x>390</x>
+      <y>250</y>
+      <width>54</width>
+      <height>12</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>TextLabel</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_7">
+    <property name="geometry">
+     <rect>
+      <x>380</x>
+      <y>250</y>
+      <width>16</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>/</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>690</width>
+     <width>774</width>
      <height>21</height>
     </rect>
    </property>
@@ -250,7 +389,13 @@
   <customwidget>
    <class>QVideoWidget</class>
    <extends>QWidget</extends>
-   <header location="global">qvideowidget.h</header>
+   <header>qvideowidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>VideoFrameDisplay</class>
+   <extends>QWidget</extends>
+   <header>videoframedisplay.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

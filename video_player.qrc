@@ -8,5 +8,7 @@
         <file>images/Qplayer.ico</file>
         <file>images/forward.png</file>
         <file>images/back.png</file>
+        <file>images/recurrent.jpg</file>
+        <file>images/series.jpg</file>
     </qresource>
 </RCC>
