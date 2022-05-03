@@ -299,7 +299,8 @@ int ReverseDecode::DecodDataPack()
             {
 //                qDebug()<<"video_pos"<<pos_ms;
                 //通知界面更新
-                emit SendOneFrame(video_pack.at(i).image.copy(),nullptr,0);
+
+                emit SendOneFrame(video_pack.at(i).image.copy(),video_pack.at(i).video_clock);
 //                qDebug()<<"pos_before_emit"<<pos_ms<<"m_run"<<m_run;
                 if(video_pack.at(i).video_clock < 0.1){
                     this->finished = true;

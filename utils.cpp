@@ -8,10 +8,26 @@ bool isValidVideoFile(QString filename){
     }
     if (type == "avi" || type == "wmv" || type == "mpg" || type == "mpeg" || type == "mov" || type == "rm"
             || type == "ram" || type == "swf" || type == "flv" || type == "mp4" || type == "mp3" || type == "wma"
-            || type == "rmvb" || type == "mkv"){
+            || type == "rmvb" || type == "mkv" || type == "wav"){
         return true;
     }
     return false;
+}
+
+bool isVideoOrAudio(QString filename){
+    filename = filename.toLower();
+    int lastindex = filename.lastIndexOf(".");
+    QString type = "";
+    for (int i = lastindex+1;i<filename.length();i++){
+        type += filename[i];
+    }
+    if (type == "avi" || type == "wmv" || type == "mpg" || type == "mpeg" || type == "mov" || type == "rm"
+            || type == "ram" || type == "swf" || type == "flv" || type == "mp4" ){
+        return VIDEO;
+    }
+    else{
+        return AUDIO;
+    }
 }
 
 QString transfer_to_std_time(qint64 miniseconds){

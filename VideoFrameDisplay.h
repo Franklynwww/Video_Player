@@ -44,8 +44,8 @@ protected:
     void mouseDoubleClickEvent(QMouseEvent *e);
 public slots:
     ///播放器相关的槽函数
-    void slotSetOneFrame(QImage img,QByteArray byt,int type);
-    void slotSetOneAudioFrame(QByteArray);
+    void slotSetOneFrame(QImage,double);
+    void slotSetOneAudioFrame(QByteArray,double);
     void threadStarted();
 };
 

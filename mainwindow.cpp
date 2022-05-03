@@ -1,6 +1,9 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include"utils.h"
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
 #include<QFileDialog>
 #include<QString>
 
@@ -19,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+
 
     this->grabKeyboard();
     ui->setupUi(this);
@@ -85,6 +89,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // 8. 获取鼠标点击事件
     ui->horizontalSlider->installEventFilter(this);
     ui->horizontalSlider->setMouseTracking(true);
+//    ui->horizontalSlider->setAttribute(Qt::WA_Hover,true);//开启悬停事件
     ui->horizontalSlider_2->installEventFilter(this);
     ui->horizontalSlider_2->setMouseTracking(true);
     // 9. 刷新列表
@@ -92,7 +97,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // 10.倒放
     //关联视频解码器
-    connect(&DecodeWork, SIGNAL(SendOneFrame(QImage,QByteArray,int)), ui->widget_2, SLOT(slotSetOneFrame(QImage,QByteArray,int)));
+    connect(&DecodeWork, SIGNAL(SendOneFrame(QImage,double)), ui->widget_2, SLOT(slotSetOneFrame(QImage,double)));
 
     //当前时间
     ui->horizontalSlider_2->installEventFilter(this);
@@ -102,7 +107,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(&DecodeWork,SIGNAL(isDone()),this,SLOT(threadFinished()));
 
     //10. 关联音频播放器
-    connect(&DecodeWorkAudio,SIGNAL(SendOneAudioFrame(QByteArray)),ui->widget_2,SLOT(slotSetOneAudioFrame(QByteArray)));
+    connect(&DecodeWorkAudio,SIGNAL(SendOneAudioFrame(QByteArray,double)),ui->widget_2,SLOT(slotSetOneAudioFrame(QByteArray,double)));
 
     connect(&DecodeWorkAudio, SIGNAL(positionChanged2(qint64)), this, SLOT(slotGetCurrentTime(qint64)));
 
@@ -113,6 +118,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
     connect(&DecodeWork,SIGNAL(noVideo()),&DecodeWorkAudio,SLOT(no_video_handle()));
+
+    connect(&previewFrame,SIGNAL(isDone(QImage)),this,SLOT(setPreviewFrame(QImage)));
 
     this->filepath = QDir::currentPath()+"/playList.txt";
     qDebug()<<this->filepath;
@@ -153,6 +160,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->label_4->setVisible(false);
     ui->widget_2->setParent(ui->centralWidget);
+    ui->widget_3->setVisible(false);
+    ui->widget_3->setParent(ui->centralWidget);
 
 
     ui->widget_2->setVisible(false);
@@ -165,6 +174,17 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->toolButton_8->setText("倒放");
     initPlayList();
 
+    ffmpegtest(62);
+
+//    parseWVV();
+//    testWav();
+//    get_audio_wave();
+    height = ui->widget_4->height();
+
+    QPalette pal(ui->widget_4->palette());
+    pal.setColor(QPalette::Background, Qt::black);
+    ui->widget_4->setAutoFillBackground(true);
+    ui->widget_4->setPalette(pal);
 
 
 }
@@ -224,21 +244,134 @@ void MainWindow::mediaStateChanged(QMediaPlayer::State state){//槽函数，触�
 
 void MainWindow::postionChanged(qint64 position){//槽函数，触发条件：视频进度自动改变
     //
-//    qDebug()<<position;
+    qDebug()<<"out_pos"<<position;
+    qDebug()<<"out_old_pos"<<old_position;
+//    if(position < 1){
 
+//    }
     ui->label_2->setText(transfer_to_std_time(position));
     ui->horizontalSlider->setValue(position);
     if(position >= this->mediaplayer->duration() && this->mediaplayer->duration()>0 && ui->toolButton_7->toolTip() == "顺序播放"){
         getNextAccessible(this->current_index+1);
+        return;
     }
     if(position >= this->mediaplayer->duration() && this->mediaplayer->duration()>0 && ui->toolButton_7->toolTip() == "单曲循环"){
         this->mediaplayer->setMedia(QUrl::fromLocalFile(this->playList[this->current_index]));
+        doBeforeChangeMedia(this->playList[this->current_index]);
         this->mediaplayer->play();
+        return;
     }
+
+
+//    if(position < ori_position + 300 * 50){
+//        ui->widget_3->xAxis->setRange(ori_position,ori_position+300*50);
+////            ui->widget_3->xAxis->setRange(position,300*100,Qt::AlignLeft);
+//    }
+
+//    else{
+//        ui->widget_3->xAxis->setRange(position,300*50,Qt::AlignRight);
+//        min = 0;
+//        max = 5000;
+////        if()
+//        ui->widget_3->yAxis->setRange(min,max);
+//    }
+
+//    qDebug()<<"position"<<position;
+//    qDebug()<<"ori_position"<<ori_position;
+    if(isVideoOrAudio(this->playList[this->current_index]) == AUDIO){
+
+    if(position - old_position >= 300){
+
+        qDebug()<<"进来了";
+        qDebug()<<"pos"<<position;
+        qDebug()<<"old_pos"<<old_position;
+        double new_wave_value = audio_wave.get_wave_value(position);
+        if (m_dataQueue.size() >= m_bufferSize)
+                m_dataQueue.dequeue();
+            m_dataQueue.enqueue(new_wave_value);
+
+//        if(new_wave_value > max ){
+//            max = new_wave_value + 100;
+//        }
+//        if(new_wave_value < min){
+//            min = new_wave_value - 100;
+//        }
+
+//        qDebug()<<"distance"<<new_wave_value-old_wave_value;
+
+          old_position = position;
+//        if(new_wave_value > 6000){
+//            new_wave_value = 5900;
+//        }
+
+//        if(old_wave_value!=0){
+//            int value = 0;
+//            if((new_wave_value - old_wave_value)/old_wave_value > 2){
+//                value = 2;
+//            }
+//            else{
+//                if((new_wave_value - old_wave_value)/old_wave_value < -2){
+//                    value = -2;
+//                }
+//            }
+//            ui->widget_3->graph(0)->addData(position,(new_wave_value - old_wave_value)/old_wave_value);
+//        }
+//        else{
+//            ui->widget_3->graph(0)->addData(position,0);
+//        }
+
+
+//        ui->widget_3->graph(0)->addData(position,new_wave_value);
+//        ui->widget_3->yAxis->setRange(min,max);
+          size_t size = m_dataQueue.size();
+          qDebug()<<"size=="<<size;
+          for (size_t j = size - 1; j; --j)
+          {
+              QCPGraphData* buff = (QCPGraphData*)m_drawBuffer->at(j);
+              buff->value = m_dataQueue.at(j);
+//              qDebug()<<"i:"<<j<<" value:"<<(QCPGraphData*)m_drawBuffer->at(j);
+          }
+          max = *std::max_element(m_dataQueue.begin(), m_dataQueue.end());
+          min = *std::min_element(m_dataQueue.begin(), m_dataQueue.end());
+          ui->widget_3->yAxis->setRange(min-100,max+100);
+          ui->widget_3->replot(QCustomPlot::rpQueuedReplot);
+
+//        ui->widget_3->replot();
+//        old_wave_value = new_wave_value;
+//       ui->widget_4->resize(ui->widget_4->width(),new_wave_value/1.5*height);
+
+    }
+    }
+
+
+//    QVector<double> lineX(2),lineY(2);
+//    lineX[0]=lineX[1]=(double)position*WavFileHeader.nSampleRate/1000;
+//    qDebug()<<"lineX[0]"<<lineX[0];
+//    lineY[0]=-100000;
+//    lineY[1]=100000;
+//    ui->widget_3->graph(1)->setData(lineX,lineY);
+
 }
 
 void MainWindow::setPosition(int position){
     //
+    ui->widget_3->removeGraph(0);
+    QSharedPointer<QCPGraphDataContainer> dataContainer = ui->widget_3->addGraph()->data();
+    QVector<QCPGraphData> plotData(m_bufferSize);
+    for (size_t j = 0; j < m_bufferSize; j++)
+    {
+        plotData[j].key = j;
+        plotData[j].value = 0;
+    }
+    dataContainer->set(plotData, true);
+    ui->widget_3->xAxis->setRange(0, m_bufferSize);
+    m_dataQueue.clear();
+    m_drawBuffer = ui->widget_3->graph()->data().data();
+//    audio_wave.init();
+    ori_position = position;
+    old_position = ori_position;
+//    old_wave_value = 0;
+
     mediaplayer->setPosition(position);
     
 }
@@ -279,6 +412,8 @@ void MainWindow::on_toolButton_2_clicked()
             return;
         }
         mediaplayer->setMedia(QUrl::fromLocalFile(filename));
+
+        doBeforeChangeMedia(filename);
 
         ui->toolButton->setAutoRaise(true);
         this->mediaplayer->play();
@@ -466,6 +601,7 @@ void MainWindow::on_listWidget_doubleClicked(const QModelIndex &index)
         qDebug()<<"文件存在";
         this->current_index = cur_index;
         this->mediaplayer->setMedia(QUrl::fromLocalFile(filename));
+        doBeforeChangeMedia(filename);
         this->play();
         for(int i = 0;i<this->playList.length();i++){
             if (i == this->current_index){
@@ -811,7 +947,11 @@ void MainWindow::getNextAccessible(int first_index){
         QFile file(nextfilename);
         if (file.exists()){
             this->current_index = cur_index;
+
             this->mediaplayer->setMedia(QUrl::fromLocalFile(nextfilename));
+            doBeforeChangeMedia(nextfilename);
+//            qDebug()<<"为何没有";
+
             this->play();
             for(int i = 0;i<this->playList.length();i++){
                 if (i == this->current_index){
@@ -836,6 +976,7 @@ void MainWindow::getNextAccessible(int first_index){
         if (file.exists()){
             this->current_index = cur_index;
             this->mediaplayer->setMedia(QUrl::fromLocalFile(nextfilename));
+            doBeforeChangeMedia(nextfilename);
             this->play();
             for(int i = 0;i<this->playList.length();i++){
                 if (i == this->current_index){
@@ -873,6 +1014,7 @@ void MainWindow::getPreviousAccessible(int first_index){
         if (file.exists()){
             this->current_index = cur_index;
             this->mediaplayer->setMedia(QUrl::fromLocalFile(prefilename));
+            doBeforeChangeMedia(prefilename);
             this->play();
             for(int i = 0;i<this->playList.length();i++){
                 if (i == this->current_index){
@@ -898,6 +1040,7 @@ void MainWindow::getPreviousAccessible(int first_index){
         if (file.exists()){
             this->current_index = cur_index;
             this->mediaplayer->setMedia(QUrl::fromLocalFile(prefilename));
+            doBeforeChangeMedia(prefilename);
             this->play();
             for(int i = 0;i<this->playList.length();i++){
                 if (i == this->current_index){
@@ -987,45 +1130,49 @@ void MainWindow::updateInfo(){
 }
 
 
-void MainWindow::ProcessFrame(QVideoFrame &frame)
-{   if (frame.endTime() == this->pause_time){
-    static int count = 0;
-    qDebug() << "=============ProcessFrame===============";
-    qDebug() << "width : " << frame.width() << " height : " << frame.height();
-    qDebug() << "start time : " << frame.startTime()/1000 << "ms";
-    qDebug() << "end time : " << frame.endTime()/1000 << "ms";
-    qDebug() << "pixelFormat :" << frame.pixelFormat();
+//void MainWindow::ProcessFrame(QVideoFrame &frame)
+//{   if (frame.endTime() == this->pause_time){
+//    static int count = 0;
+//    qDebug() << "=============ProcessFrame===============";
+//    qDebug() << "width : " << frame.width() << " height : " << frame.height();
+//    qDebug() << "start time : " << frame.startTime()/1000 << "ms";
+//    qDebug() << "end time : " << frame.endTime()/1000 << "ms";
+//    qDebug() << "pixelFormat :" << frame.pixelFormat();
 
-    frame.map(QAbstractVideoBuffer::ReadOnly);
-    QImage recvImage(frame.bits(), frame.width(), frame.height(), QVideoFrame::imageFormatFromPixelFormat(frame.pixelFormat()));
-    recvImage.save(QString("D:/images/%1.jpg").arg(count), "JPG");
-    qDebug() << "frame data size :" << frame.mappedBytes();
-//    update();
-    frame.unmap();
-    }
-}
+//    frame.map(QAbstractVideoBuffer::ReadOnly);
+//    QImage recvImage(frame.bits(), frame.width(), frame.height(), QVideoFrame::imageFormatFromPixelFormat(frame.pixelFormat()));
+//    recvImage.save(QString("D:/images/%1.jpg").arg(count), "JPG");
+//    qDebug() << "frame data size :" << frame.mappedBytes();
+////    update();
+//    frame.unmap();
+//    }
+//}
 
 //实现mouseMoveEvent
 void MainWindow::mouseMoveEvent(QMouseEvent *event){
 //    qDebug()<<"ok";
-//    // 判断鼠标是否在pushButton上
     int mouse_x = event->x();
     int mouse_y = event->y();
 //    if (ui->horizontalSlider->geometry().contains(this->mapFromGlobal(QCursor::pos())))
     if(mouse_x>=ui->horizontalSlider->x() && mouse_x<= ui->horizontalSlider->x()+ui->horizontalSlider->width()
-            && mouse_y>=ui->horizontalSlider->y()+ ui->horizontalSlider->height() && mouse_y<=ui->horizontalSlider->y()+1.5*ui->horizontalSlider->height())
+            && mouse_y>=ui->horizontalSlider->y()+ 1.5*ui->horizontalSlider->height() && mouse_y<=ui->horizontalSlider->y()+1.8*ui->horizontalSlider->height())
     {
         // do something...
         qDebug()<<111;
         if (this->current_index != -1){
-        qint64 position = mouse_x*ui->horizontalSlider->maximum()/ui->horizontalSlider->width();
+        qint64 position = (mouse_x-ui->horizontalSlider->x())*ui->horizontalSlider->maximum()/ui->horizontalSlider->width();
         this->pause_time = position;
         ui->label_4->move(mouse_x,ui->label_4->y());
         ui->label_4->setPixmap(QPixmap("D:\\images\\72.jpg"));
+        previewFrame.time = position / 1000;
+//        previewFrame.time = 60;
+        previewFrame.filename = this->playList[this->current_index];
+        previewFrame.start();
         ui->label_4->setScaledContents(true);
         ui->label_4->setVisible(true);
-        VideoSurface * videoSurface = new VideoSurface();
-        qDebug()<<"position"<<position;
+//        VideoSurface * videoSurface = new VideoSurface();
+//        qDebug()<<"max_len"<<transfer_to_std_time(ui->horizontalSlider->maximum());
+//        qDebug()<<"position"<<transfer_to_std_time(position);
 //        this->mediaplayer2->setVideoOutput(videoSurface);
 //        this->mediaplayer2->setMedia(QUrl(this->playList[this->current_index]));
 //        connect(videoSurface, SIGNAL(frameAvailable(QVideoFrame &)), this, SLOT(ProcessFrame(QVideoFrame &)));
@@ -1041,6 +1188,7 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event){
     }
     else{
         ui->label_4->setVisible(false);
+//        previewFrame.stop();
     }
 //    emit mouseMoved(event);
 }
@@ -1051,12 +1199,13 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event){
 //使用eventFilter实现mousePressEvent
 bool MainWindow::eventFilter(QObject *obj, QEvent *e)
 {
+    QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(e);
+    int mouse_x = mouseEvent->x();
     if (obj == ui->horizontalSlider )
     {
         if (e->type() == QEvent::MouseButtonPress && ui->toolButton_8->text() == "倒放"){
-            QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(e);
+
             if(mouseEvent->button()  == Qt::LeftButton){
-                 int mouse_x = mouseEvent->x();
     //           qDebug()<<mouse_x;
     //           qDebug()<<ui->horizontalSlider->width();
     //           qDebug()<<ui->horizontalSlider->maximum();
@@ -1064,7 +1213,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *e)
                  qint64 position = mouse_x*ui->horizontalSlider->maximum()/ui->horizontalSlider->width();
     //           qDebug()<<position;
     //           ui->horizontalSlider->setValue(position);
-                 this->mediaplayer->setPosition(position);
+                 setPosition(position);
     //           emit mousePress(e);
     //           QPixmap pixmap(":/images/all.jpg");
     //           QPalette palette;
@@ -1072,6 +1221,25 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *e)
     //           ui->horizontalSlider->setPalette(palette);
             }
         }
+//        if(e->type() == QEvent::HoverEnter){
+//            qDebug()<<"进入悬停";
+//            QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(e);
+
+//            qDebug()<<"slider_x"<<ui->horizontalSlider->x();
+//            qDebug()<<"x"<<mouse_x;
+//            if (this->current_index != -1){
+//            qint64 position = (mouse_x-ui->horizontalSlider->x())*ui->horizontalSlider->maximum()/ui->horizontalSlider->width();
+//            this->pause_time = position;
+//            ui->label_4->move(mouse_x,ui->label_4->y());
+//            ui->label_4->setPixmap(QPixmap("D:\\images\\72.jpg"));
+//            previewFrame.time = position / 1000;
+//            previewFrame.filename = this->playList[this->current_index];
+//            previewFrame.start();
+//            ui->label_4->setScaledContents(true);
+//            ui->label_4->setVisible(true);
+//            VideoSurface * videoSurface = new VideoSurface();
+//        }
+//    }
     }
 
     if(obj==ui->horizontalSlider_2)
@@ -1101,31 +1269,31 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *e)
     return QWidget::eventFilter(obj,e);
 }
 
-void MainWindow::presentframe(const QVideoFrame & frame){
-    if (frame.endTime() == this->pause_time){
-        qDebug()<<"present frame";
-        QVideoFrame frametodraw(frame);
-        if(!frametodraw.map(QAbstractVideoBuffer::ReadOnly))
-            return;
-        QImage img = QImage(frame.bits(),
-                    frame.width(),
-                    frame.height(),
-                    frame.bytesPerLine(),
-                    QVideoFrame::imageFormatFromPixelFormat(frametodraw.pixelFormat())
-                    //QImage::Format_RGB32
-                    );
-        img = img.mirrored(false, true);//图像垂直翻转(图像是倒置的，调用该函数可正置。同时该函数也解决了频繁的内存错误引起的崩溃, 原因不明)
-        qDebug()<<img.size();
-        img.save(QString("D:/images/001.jpg"), "JPG");
-        //这里可以分析或编辑图像后再输出显示视频
-        //视频的显示则利用重写paintEvent()函数来绘制实现。还可以直接将图像设置到label控件中，也会形成视频。
-        update();                       //通知Qt重绘
+//void MainWindow::presentframe(const QVideoFrame & frame){
+//    if (frame.endTime() == this->pause_time){
+//        qDebug()<<"present frame";
+//        QVideoFrame frametodraw(frame);
+//        if(!frametodraw.map(QAbstractVideoBuffer::ReadOnly))
+//            return;
+//        QImage img = QImage(frame.bits(),
+//                    frame.width(),
+//                    frame.height(),
+//                    frame.bytesPerLine(),
+//                    QVideoFrame::imageFormatFromPixelFormat(frametodraw.pixelFormat())
+//                    //QImage::Format_RGB32
+//                    );
+//        img = img.mirrored(false, true);//图像垂直翻转(图像是倒置的，调用该函数可正置。同时该函数也解决了频繁的内存错误引起的崩溃, 原因不明)
+//        qDebug()<<img.size();
+//        img.save(QString("D:/images/001.jpg"), "JPG");
+//        //这里可以分析或编辑图像后再输出显示视频
+//        //视频的显示则利用重写paintEvent()函数来绘制实现。还可以直接将图像设置到label控件中，也会形成视频。
+//        update();                       //通知Qt重绘
 
-        frametodraw.unmap();
-    }
+//        frametodraw.unmap();
+//    }
 
 
-}
+//}
 
 void MainWindow::back(){
     qint64 old_position = this->mediaplayer->position();
@@ -1133,7 +1301,7 @@ void MainWindow::back(){
     if (new_position < 0){
         return;
     }
-    this->mediaplayer->setPosition(new_position);
+    setPosition(new_position);
 }
 
 void MainWindow::forward(){
@@ -1142,7 +1310,7 @@ void MainWindow::forward(){
     if (new_position > this->mediaplayer->duration()){
         return;
     }
-    this->mediaplayer->setPosition(new_position);
+    setPosition(new_position);
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *e)
@@ -1291,9 +1459,10 @@ void MainWindow::on_toolButton_8_clicked()
        ui->horizontalSlider->setMinimum(0); //设置最小值
        ui->horizontalSlider->setValue(0);
        this->mediaplayer->setMedia(QUrl::fromLocalFile(this->file_reverse));
-       this->mediaplayer->setPosition(this->last_begin_to_reverse);
+       setPosition(this->last_begin_to_reverse);
 //       qDebug()<<"file_reverse"<<file_reverse;
        this->current_index = this->playList.indexOf(file_reverse);
+       doBeforeChangeMedia(this->file_reverse);
        this->play();
 //       DecodeWork.StopPlay();
 
@@ -1433,3 +1602,486 @@ void MainWindow::on_horizontalSlider_2_valueChanged(int value)
         qDebug()<<"1你们1";
     }
 }
+
+
+int MainWindow::openCodecContext(const AVFormatContext* pFormatCtx, int* pStreamIndex, enum AVMediaType type, AVCodecContext** ppCodecCtx) {
+    qDebug()<<"222222222";
+    int streamIdx = -1;
+    // 获取流下标
+    for (int i = 0; i < pFormatCtx->nb_streams; i++) {
+        if (pFormatCtx->streams[i]->codec->codec_type == type) {
+            streamIdx = i;
+            break;
+        }
+    }
+    if (streamIdx == -1) {
+        qDebug()<<("find video stream failed!\n");
+        exit(-1);
+    }
+    // 寻找解码器
+    AVCodecContext* pCodecCtx = pFormatCtx->streams[streamIdx]->codec;
+    AVCodec* pCodec = avcodec_find_decoder(pCodecCtx->codec_id);
+    if (NULL == pCodec) {
+        qDebug()<<("avcode find decoder failed!\n");
+        exit(-1);
+    }
+
+    //打开解码器
+    if (avcodec_open2(pCodecCtx, pCodec, NULL) < 0) {
+        qDebug()<<("avcode open failed!\n");
+        exit(-1);
+    }
+    *ppCodecCtx = pCodecCtx;
+    *pStreamIndex = streamIdx;
+
+    qDebug()<<"OK";
+    return 0;
+}
+
+void MainWindow::ffmpegtest(double timestamp){
+//    int i = 0;
+////    qDebug()<<"见来了";
+//        AVFormatContext* pInFormatCtx = NULL;
+//        AVCodecContext* pVideoCodecCtx = NULL;
+//        AVCodecContext* pAudioCodecCtx = NULL;
+//        AVPacket* pPacket = NULL;
+//        AVFrame* pFrame = NULL;
+//        AVFrame* pFrameRGB = NULL;
+//        int ret;
+//        /* 支持本地文件和网络url */
+//        const char streamUrl[] = "D:/qtproject/Video_Player/video_test/t113.mp4";
+
+//        /* 1. 注册 */
+//        av_register_all();
+
+//        pInFormatCtx = avformat_alloc_context();
+
+//        /* 2. 打开流 */
+//        if (avformat_open_input(&pInFormatCtx, streamUrl, NULL, NULL) != 0) {
+//            qDebug()<<("Couldn't open input stream.\n");
+//            return;
+//        }
+
+//        /* 3. 获取流的信息 */
+//        if (avformat_find_stream_info(pInFormatCtx, NULL) < 0) {
+//            qDebug()<<("Couldn't find stream information.\n");
+//            return;
+//        }
+
+//        int videoStreamIdx = -1;
+//        int audioStreamIdx = -1;
+//        /* 4. 寻找并打开解码器 */
+
+//        openCodecContext(pInFormatCtx, &videoStreamIdx, AVMEDIA_TYPE_VIDEO, &pVideoCodecCtx);
+//        openCodecContext(pInFormatCtx, &audioStreamIdx, AVMEDIA_TYPE_AUDIO, &pAudioCodecCtx);
+
+////        qDebug()<<ui->horizontalSlider->value();
+////        qDebug()<<videoStreamIdx;
+//        qDebug()<<"帧率为"<<pInFormatCtx->streams[videoStreamIdx]->avg_frame_rate.num/pInFormatCtx->streams[videoStreamIdx]->avg_frame_rate.den;
+
+
+
+//        pPacket = av_packet_alloc();
+//        pFrame = av_frame_alloc();
+//        pFrameRGB = av_frame_alloc();
+
+
+//        int numBytes = avpicture_get_size(AV_PIX_FMT_RGB24, pVideoCodecCtx->width, pVideoCodecCtx->height);
+//        uint8_t* buffer = (uint8_t *)av_malloc(numBytes * sizeof(uint8_t));
+
+//        avpicture_fill((AVPicture*)pFrameRGB, buffer, AV_PIX_FMT_RGB24, pVideoCodecCtx->width, pVideoCodecCtx->height);
+
+//        struct SwsContext* img_convert_ctx;
+//        img_convert_ctx = sws_getContext(pVideoCodecCtx->width, pVideoCodecCtx->height, pVideoCodecCtx->pix_fmt,
+//                pVideoCodecCtx->width, pVideoCodecCtx->height, AV_PIX_FMT_RGB24, SWS_BICUBIC, NULL, NULL, NULL);
+
+
+////        av_seek_frame(pInFormatCtx, -1,	timestamp*AV_TIME_BASE,AVSEEK_FLAG_BACKWARD);
+//        while(av_read_frame(pInFormatCtx, pPacket)>=0){
+//        if (pPacket->stream_index == videoStreamIdx){
+//            avcodec_decode_video2(pVideoCodecCtx, pFrame, &ret, pPacket);
+//            if(ret){
+//                int video_width = pVideoCodecCtx->width;
+//                int video_height = pVideoCodecCtx->height;
+//                qDebug()<<video_width;
+//                qDebug()<<video_height;
+//                sws_scale(img_convert_ctx, pFrame->data, pFrame->linesize, 0, pVideoCodecCtx->height,
+//                                    pFrameRGB->data, pFrameRGB->linesize);
+//                QImage image(pFrameRGB->data[0], pVideoCodecCtx->width, pVideoCodecCtx->height, pFrameRGB->linesize[0], QImage::Format_RGB888);
+//                image.save("D:\\0.jpg");
+
+//            //将解码后的YUV数据转换成RGB24
+////            img_convert_ctx = sws_getContext(video_width, video_height,
+////                pInFormatCtx->streams[videoStreamIdx]->codec->pix_fmt, video_width, video_height,
+////                AV_PIX_FMT_RGB24, SWS_BICUBIC, nullptr, nullptr, nullptr);
+
+////            //计算RGB图像所占字节大小
+////            int numBytes = avpicture_get_size(AV_PIX_FMT_RGB24, video_width, video_height);
+
+////            //申请空间存放RGB图像数据
+////            uint8_t * out_buffer_rgb = (uint8_t *)av_malloc(numBytes * sizeof(uint8_t));
+////            sws_scale(img_convert_ctx,
+////                (uint8_t const **)
+////                      pFrame->data,
+////                pFrame->linesize, 0, video_height, pFrameRGB->data,
+////                pFrameRGB->linesize);
+
+////            //加载图片数据
+////            QImage image(out_buffer_rgb, video_width, video_height, QImage::Format_RGB888);
+
+////            qDebug()<<image.size();
+////            image.save("D:/0.jpg");
+//            }
+//        }
+//        av_free_packet(pPacket);
+//}
+//            av_frame_free(&pFrame);
+//            avcodec_close(pVideoCodecCtx);
+//            avcodec_close(pAudioCodecCtx);
+//            avformat_close_input(&pInFormatCtx);
+
+
+
+
+
+
+
+////        int cnt = 20; // 读取20帧数据（音频和视频）
+////        while (cnt--) {
+////            /* 5. 读流数据, 未解码的数据存放于pPacket */
+////            ret = av_read_frame(pInFormatCtx, pPacket);
+////            qDebug()<<ret;
+////            if (ret < 0) {
+////                qDebug()<<("av_read_frame error\n");
+////                break;
+////            }
+
+////            /* 6. 解码, 解码后的数据存放于pFrame */
+////            /* 视频解码 */
+////            if (pPacket->stream_index == videoStreamIdx) {
+//////                qDebug()<<"video";
+////                avcodec_decode_video2(pVideoCodecCtx, pFrame, &ret, pPacket);
+//////                qDebug()<<"ret"<<ret;
+////                if (ret == 0) {
+////                    qDebug()<<("video decodec error!\n");
+////                    continue;
+////                }
+////                qDebug()<<("* * * * * * video * * * * * * * * *\n");
+////                qDebug()<<("___height: [%d]\n", pFrame->height);
+////                qDebug()<<("____width: [%d]\n", pFrame->width);
+////                qDebug()<<("pict_type: [%d]\n", pFrame->pict_type);
+////                qDebug()<<("key_frame: [%d]\n", pFrame->key_frame); // 视频关键帧  1 -> 是 0 -> 否
+////                qDebug()<<("___format: [%d]\n", pFrame->format);
+////                qDebug()<<("* * * * * * * * * * * * * * * * * * *\n\n");
+////            }
+
+////            /* 音频解码 */
+////            if (pPacket->stream_index == audioStreamIdx) {
+////                qDebug()<<"audio";
+////                avcodec_decode_audio4(pAudioCodecCtx, pFrame, &ret, pPacket);
+////                if (ret < 0) {
+////                    qDebug()<<("audio decodec error!\n");
+////                    continue;
+////                }
+////                qDebug()<<("* * * * * * audio * * * * * * * * * *\n");
+////                qDebug()<<("____nb_samples: [%d]\n", pFrame->nb_samples);
+////                qDebug()<<("__samples_rate: [%d]\n", pFrame->sample_rate);
+////                qDebug()<<("channel_layout: [%lu]\n", pFrame->channel_layout);
+////                qDebug()<<("________format: [%d]\n", pFrame->format);
+////                qDebug()<<("* * * * * * * * * * * * * * * * * * *\n\n");
+////            }
+////            av_packet_unref(pPacket); /* 将缓存空间的引用计数-1，并将Packet中的其他字段设为初始值。如果引用计数为0，自动的释放缓存空间 */
+////        }
+////        /* 释放资源 */
+////        av_frame_free(&pFrame);
+////        av_packet_free(&pPacket);
+////        avcodec_close(pVideoCodecCtx);
+////        avcodec_close(pAudioCodecCtx);
+////        avformat_close_input(&pInFormatCtx);
+
+//        return;
+
+
+    AVFormatContext *pFormatCtx = avformat_alloc_context();
+    int res;
+    res = avformat_open_input(&pFormatCtx, "D:\\qtproject\\Video_Player\\video_test\\51956.WMV", nullptr, nullptr);
+    if (res) {
+        return;
+    }
+    avformat_find_stream_info(pFormatCtx, nullptr);
+    int videoStream = -1;
+    for(int i=0; i<pFormatCtx->nb_streams; i++) {
+        if(pFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
+            videoStream=i;
+            break;
+        }
+    }
+    if(videoStream == -1) {
+        return;
+    }
+    AVCodecContext *pCodecCtxOrig = nullptr;
+    // Get a pointer to the codec context for the video stream
+    pCodecCtxOrig = pFormatCtx->streams[videoStream]->codec;
+    AVCodec *pCodec = nullptr;
+    // Find the decoder for the video stream
+    pCodec = avcodec_find_decoder(pCodecCtxOrig->codec_id);
+    if(pCodec == nullptr) {
+        qDebug()<<(stderr, "Unsupported codec!\n");
+        return; // Codec not found
+    }
+    AVCodecContext *pCodecCtx = nullptr;
+    // Copy context
+    pCodecCtx = avcodec_alloc_context3(pCodec);
+    if(avcodec_copy_context(pCodecCtx, pCodecCtxOrig) != 0) {
+        qDebug()<<(stderr, "Couldn't copy codec context");
+        return; // Error copying codec context
+    }
+    // Open codec
+    if(avcodec_open2(pCodecCtx, pCodec, nullptr)<0) {
+        return;// Could not open codec
+    }
+    AVFrame *pFrameRGB = nullptr;
+    pFrameRGB = av_frame_alloc();
+    res = av_seek_frame(pFormatCtx, -1, timestamp * AV_TIME_BASE, AVSEEK_FLAG_BACKWARD);
+    if (res<0) {
+        return;
+    }
+    AVPacket packet;
+    while(av_read_frame(pFormatCtx, &packet) >= 0) {
+//        av_read_frame(pFormatCtx, &packet);
+        if(packet.stream_index == videoStream) {
+            res = avcodec_send_packet(pCodecCtx, &packet);
+            int gotPicture = avcodec_receive_frame(pCodecCtx, pFrameRGB); //gotPicture = 0 success, a frame was returned
+            if(gotPicture == 0) {
+                SwsContext* swsContext = sws_getContext(pCodecCtx->width, pCodecCtx->height, pCodecCtx->pix_fmt, pCodecCtx->width, pCodecCtx->height, AV_PIX_FMT_RGB24,
+                                          SWS_BICUBIC, nullptr, nullptr, nullptr);
+                AVFrame* frameRGB = av_frame_alloc();
+                avpicture_alloc((AVPicture*)frameRGB, AV_PIX_FMT_RGB24, pCodecCtx->width, pCodecCtx->height);
+                sws_scale(swsContext, pFrameRGB->data, pFrameRGB->linesize, 0, pCodecCtx->height, frameRGB->data, frameRGB->linesize);
+                QImage image(frameRGB->data[0], pCodecCtx->width, pCodecCtx->height, frameRGB->linesize[0], QImage::Format_RGB888);
+                image.save("D:\\0.jpg");
+                avformat_close_input(&pFormatCtx);
+                return;
+            }
+        }
+    }
+    return ;
+
+
+}
+
+void MainWindow::setPreviewFrame(QImage image){
+    qDebug()<<"发了";
+    qDebug()<<image.size();
+    ui->label_4->setPixmap(QPixmap::fromImage(image));
+}
+
+void MainWindow::parseWVV(){
+    ui->widget->setVisible(false);
+    ui->widget_3->setVisible(true);
+    QFile fileInfo("D:/qtproject/Video_Player/video_test/123.wav");
+    if (!fileInfo.open(QIODevice::ReadOnly))
+    {
+        return ;
+    }
+    fileInfo.read(WavFileHeader.RiffName, sizeof(WavFileHeader.RiffName));
+    fileInfo.read((char*)&WavFileHeader.nRiffLength, sizeof(WavFileHeader.nRiffLength));
+    fileInfo.read(WavFileHeader.WavName, sizeof(WavFileHeader.WavName));
+    fileInfo.read(WavFileHeader.FmtName, sizeof(WavFileHeader.FmtName));
+    fileInfo.read((char*)&WavFileHeader.nFmtLength, sizeof(WavFileHeader.nFmtLength));
+    fileInfo.read((char*)&WavFileHeader.nAudioFormat, sizeof(WavFileHeader.nAudioFormat));
+    fileInfo.read((char*)&WavFileHeader.nChannleNumber, sizeof(WavFileHeader.nChannleNumber));
+    fileInfo.read((char*)&WavFileHeader.nSampleRate, sizeof(WavFileHeader.nSampleRate));
+    fileInfo.read((char*)&WavFileHeader.nBytesPerSecond, sizeof(WavFileHeader.nBytesPerSecond));
+    fileInfo.read((char*)&WavFileHeader.nBytesPerSample, sizeof(WavFileHeader.nBytesPerSample));
+    fileInfo.read((char*)&WavFileHeader.nBitsPerSample, sizeof(WavFileHeader.nBitsPerSample));
+
+    QString strAppendMessageData;
+    if (WavFileHeader.nFmtLength >= 18)
+    {
+        fileInfo.read((char*)&WavFileHeader.nAppendMessage, sizeof(WavFileHeader.nAppendMessage));
+
+        int appendMessageLength = WavFileHeader.nFmtLength - 18;
+        WavFileHeader.AppendMessageData = new char[appendMessageLength];
+        fileInfo.read(WavFileHeader.AppendMessageData, appendMessageLength);
+        strAppendMessageData = QString(WavFileHeader.AppendMessageData);
+    }
+    char chunkName[5];
+    fileInfo.read(chunkName, sizeof(chunkName) - 1);
+    chunkName[4] = '\0';
+    QString strChunkName(chunkName);
+    if (strChunkName.compare("fact") == 0)
+    {
+        strcpy(WavFileHeader.FactName, chunkName);
+        fileInfo.read((char*)&WavFileHeader.nFactLength, sizeof(WavFileHeader.nFactLength));
+        fileInfo.read(WavFileHeader.FactData, sizeof(WavFileHeader.FactData));
+        fileInfo.read(WavFileHeader.DATANAME, sizeof(WavFileHeader.DATANAME));
+    }
+    else
+    {
+        strcpy(WavFileHeader.DATANAME, chunkName);
+    }
+
+    fileInfo.read((char*)&WavFileHeader.nDataLength, sizeof(WavFileHeader.nDataLength));
+
+    QByteArray pcmData;
+    pcmData = fileInfo.readAll();
+    WavFileHeader.fileDataSize = pcmData.size();
+    WavFileHeader.fileTotalSize = WavFileHeader.nRiffLength + 8;
+    WavFileHeader.fileHeaderSize = WavFileHeader.fileTotalSize - WavFileHeader.fileDataSize;
+
+
+    qDebug()<<"byte_per_sample"<<WavFileHeader.nBytesPerSample;
+    qDebug()<<"wav_filedatasize"<<WavFileHeader.fileDataSize;
+    qDebug()<<"sample_rate"<<WavFileHeader.nSampleRate;
+    qDebug()<<"per bit in sample"<<WavFileHeader.nBitsPerSample;
+    fileInfo.close();
+
+
+//    QVector<double> waveData;
+//     uint len = WavFileHeader.fileDataSize/WavFileHeader.nBytesPerSample;
+//     qDebug()<<"len"<<len;
+//     qDebug()<<__FUNCTION__<<pcmData.size()<<len;
+//     if(WavFileHeader.nBytesPerSample == 1)//8位
+//     {
+//         char *data = (char *)pcmData.data();
+//         for (uint i = 0; i < len; i++)
+//         {
+//             waveData.append(data[i]);
+//         }
+//     }
+//     else//16位
+//     {
+//         short *data = (short *)pcmData.data();
+//         for (uint i = 0; i < len; i++)
+//         {
+//             waveData.append(data[i]);
+//         }
+//     }
+//     ui->widget_3->addGraph();
+//     ui->widget_3->graph(0)->setPen(QPen(Qt::blue));
+
+//     ui->widget_3->addGraph();
+//     ui->widget_3->graph(1)->setPen(QPen(Qt::red));
+
+//     QVector<double> x(len);
+//     for (uint i=0; i<len; ++i)
+//     {
+//         x[i] = i;
+//     }
+//     QVector<double> lineX(2),lineY(2);
+//     lineX[0]=lineX[1]=0;
+//     lineY[0]=-100000;
+//     lineY[1]=100000;
+//     ui->widget_3->graph(0)->setData(x, waveData);
+////     ui->widget_3->graph(1)->setData(lineX,lineY);
+//     ui->widget_3->graph(0)->rescaleAxes();
+
+
+    FILE *fp = NULL;
+
+    Wav wav;
+    RIFF_t riff;
+    FMT_t fmt;
+    Data_t data;
+
+    fp = fopen("D:\\qtproject\\Video_Player\\video_test\\123.wav", "rb");
+    if (!fp) {
+        qDebug()<<("can't open audio file\n");
+        return;
+    }
+
+    fread(&wav, 1, sizeof(wav), fp);
+
+    riff = wav.riff;
+    fmt = wav.fmt;
+    data = wav.data;
+
+    /**
+     *  RIFF
+     */
+//    qDebug()<<("ChunkID \t\t%c%c%c%c\n", riff.ChunkID[0], riff.ChunkID[1], riff.ChunkID[2], riff.ChunkID[3]);
+//    qDebug()<<("ChunkSize \t\t%d\n", riff.ChunkSize);
+//    qDebug()<<("Format \t\t\t%c%c%c%c\n", riff.Format[0], riff.Format[1], riff.Format[2], riff.Format[3]);
+
+//    qDebug()<<("\n");
+
+    /**
+     *  fmt
+     */
+//    qDebug()<<("Subchunk1ID \t%c%c%c%c\n", fmt.Subchunk1ID[0], fmt.Subchunk1ID[1], fmt.Subchunk1ID[2], fmt.Subchunk1ID[3]);
+//    qDebug()<<("Subchunk1Size \t%d\n", fmt.Subchunk1Size);
+//    qDebug()<<("AudioFormat \t%d\n", fmt.AudioFormat);
+//    qDebug()<<("NumChannels \t%d\n", fmt.NumChannels);
+//    qDebug()<<("SampleRate \t\t%d\n", fmt.SampleRate);
+//    qDebug()<<("ByteRate \t\t%d\n", fmt.ByteRate);
+//    qDebug()<<("BlockAlign \t\t%d\n", fmt.BlockAlign);
+//    qDebug()<<("BitsPerSample \t%d\n", fmt.BitsPerSample);
+    qDebug()<<"samplerate"<<fmt.SampleRate;
+    qDebug()<<"duration"<<data.Subchunk2Size / fmt.ByteRate;
+
+    qDebug()<<("\n");
+
+    /**
+     *  data
+     */
+//    qDebug()<<("blockID \t\t%c%c%c%c\n", data.Subchunk2ID[0], data.Subchunk2ID[1], data.Subchunk2ID[2], data.Subchunk2ID[3]);
+//    qDebug()<<("blockSize \t\t%d\n", data.Subchunk2Size);
+
+    qDebug()<<("\n");
+
+//    duration = Subchunk2Size / ByteRate
+    qDebug()<<("duration \t\t%d\n", data.Subchunk2Size / fmt.ByteRate);
+
+
+
+
+}
+
+void MainWindow::testWav(){
+    WaveFile m_Wavefile;
+    m_Wavefile.readWave("D:\\qtproject\\Video_Player\\video_test\\123.wav");
+    qDebug()<<"vyte"<<m_Wavefile.getSampleNum();
+
+}
+
+void MainWindow::doBeforeChangeMedia(QString nextFilename){
+    if(isVideoOrAudio(nextFilename) == AUDIO){
+
+        audio_wave.stop();
+        ui->widget->setVisible(false);
+        ui->widget_3->setVisible(true);
+        audio_wave.init(nextFilename);
+        old_position = 0;
+        qDebug()<<"init完成";
+        qDebug()<<"old_pos"<<old_position;
+        ui->widget_3->removeGraph(0);
+        QSharedPointer<QCPGraphDataContainer> dataContainer = ui->widget_3->addGraph()->data();
+        ui->widget_3->graph(0)->setPen(QPen(Qt::blue));
+
+        QVector<QCPGraphData> plotData(m_bufferSize);
+        for (size_t j = 0; j < m_bufferSize; j++)
+        {
+            plotData[j].key = j;
+            plotData[j].value = 0;
+        }
+        dataContainer->set(plotData, true);
+        ui->widget_3->xAxis->setRange(0, m_bufferSize);
+    //    ui->widget_3->yAxis->setRange(0,10000);
+        m_dataQueue.clear();
+        m_drawBuffer = ui->widget_3->graph(0)->data().data();
+        ui->widget_3->yAxis->setVisible(false);
+        ui->widget_3->xAxis->setVisible(false);
+    //    ui->widget_3->yAxis->setVisible(true);
+
+    }
+    else{
+        if(isVideoOrAudio(nextFilename) == VIDEO){
+            ui->widget->setVisible(true);
+            ui->widget_3->setVisible(false);
+            m_dataQueue.clear();
+        }
+    }
+
+}
+

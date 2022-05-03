@@ -61,24 +61,57 @@ void VideoFrameDisplay::paintEvent(QPaintEvent *event)
 }
 
 
-void VideoFrameDisplay::slotSetOneFrame(QImage img,QByteArray byt,int type)
+void VideoFrameDisplay::slotSetOneFrame(QImage img,double video_clock)
 {
-    if (type == 0){
-        //    qDebug()<<"在花了";
-            src_mImage =mImage = img;
-        //    qDebug()<<img.size();
-        //    img.save("D:\\images\\0.jpg");
-            update(); //调用update将执行 paintEvent函数
-    }
+
+//            double audioTime = get_clock(&play_clock_s);
+
+            //如果读取到无效的时钟时间的话则continue
+//                if(isnan(audioTime))
+//                {
+//                    usleep(1000*1000/g_MedieInfo.m_FrameRate);
+//                    av_packet_unref(&avPacket);
+//                    av_freep(&avPacket);
+//                    continue;
+//                }
+
+            //qDebug()<<"Video Time "<<videoPts<<" Get Audio Time "<<audioTime;
+
+            //计算视频时钟与主时钟的差值
+//            int DiffTimeMs = video_clock*1000 - audioTime*1000;
+
+//            qDebug()<<"diffentimeMS"<<DiffTimeMs;
+//            if(DiffTimeMs >= 0)//视频时钟比主时钟快，则休眠
+//            {
+//                QThread::msleep(DiffTimeMs);
+                //    qDebug()<<"在花了";
+                      src_mImage =mImage = img;
+                 //    qDebug()<<img.size();
+                 //    img.save("D:\\images\\0.jpg");
+                      update(); //调用update将执行 paintEvent函数
+//}
+//            }
+//            else//视频时钟比主时钟慢，则丢弃该帧
+//            {
+////                    msleep(1);
+////                    av_packet_unref(&avPacket);
+////                    av_freep(&avPacket);
+//                return;
+//            }
+
+
 
 }
 
-void VideoFrameDisplay::slotSetOneAudioFrame(QByteArray byt){
-    qDebug()<<"在播了";
+void VideoFrameDisplay::slotSetOneAudioFrame(QByteArray byt,double audio_clock){
+//    qDebug()<<"在播了";
     int writeBytes = qMin(byt.length(), audioOutput->bytesFree());
-    qDebug()<<"writeBytes"<<writeBytes;
+//    qDebug()<<"writeBytes"<<writeBytes;
     streamOut->write(byt.data(), writeBytes);
     byt = byt.right(byt.length() - writeBytes);
+
+//    set_clock(&play_clock_s,audio_clock,0);
+
 }
 
 /*

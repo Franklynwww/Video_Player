@@ -8,6 +8,7 @@ QT       += core gui
 QT       += multimedia
 QT       += multimediawidgets
 QT       += network
+QT       += printsupport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -27,25 +28,36 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += \
+    PLAY_CLOCK_S.cpp \
+    PreviewFrame.cpp \
     ReverseDecode.cpp \
     ReverseDecode_AuDio.cpp \
     VideoFrameDisplay.cpp \
     VideoJPG.cpp \
     VideoSurface.cpp \
+    get_audio_wave.cpp \
         main.cpp \
         mainwindow.cpp \
+    qcustomplot.cpp \
     utils.cpp \
-    openfilethread.cpp
+    wavefile.cpp
 
 HEADERS += \
+    Global_Clock.h \
+    PLAY_CLOCK_S.h \
+    PreviewFrame.h \
     ReverseDecode.h \
     ReverseDecode_Audio.h \
     VideoFrameDisplay.h \
     VideoJPG.h \
     VideoSurface.h \
+    WAVFILEHEADER.h \
+    get_audio_wave.h \
         mainwindow.h \
+    qcustomplot.h \
+    resolve_wav_wave.h \
     utils.h \
-    openfilethread.h
+    wavefile.h
 
 FORMS += \
         mainwindow.ui

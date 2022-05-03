@@ -7,6 +7,7 @@
 #include <QQueue>
 #include <QFileInfo>
 #include<QAudioOutput>
+#include"Global_Clock.h"
 extern "C" {
 #include <libavutil/opt.h>
 #include <libavutil/mem.h>
@@ -90,7 +91,7 @@ protected:
 
 signals:
     void positionChanged2(qint64 ms);
-    void SendOneAudioFrame(QByteArray); //输出信号
+    void SendOneAudioFrame(QByteArray,double); //输出信号
     void ss_ReversePlayFinish(); //倒放完成..--暂停或者停止的时候发出信号
     void isDone2();
     void started2();

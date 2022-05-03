@@ -6,10 +6,16 @@
 #include<QMediaPlayer>
 #include<QCloseEvent>
 #include<QAudioOutput>
+#include"qcustomplot.h"
 
-#include"openfilethread.h"
+//#include"openfilethread.h"
 #include"ReverseDecode.h"
 #include"ReverseDecode_Audio.h"
+#include"PreviewFrame.h"
+#include"WAVFILEHEADER.h"
+#include"resolve_wav_wave.h"
+#include"wavefile.h"
+#include"get_audio_wave.h"
 
 
 namespace Ui {
@@ -25,11 +31,22 @@ public:
     ~MainWindow();
 
 private:
+    QQueue<float> m_dataQueue;
+    int m_bufferSize = 50;
+    int max;
+    int min;
+    float m_magnification;
+    QCPGraphDataContainer* m_drawBuffer;
+    qint64 ori_position = 0;
+    qint64 old_position = 0;
+    double old_wave_value = 0.;
     ReverseDecode DecodeWork;
     ReverseDecode_Audio DecodeWorkAudio;
+    PreviewFrame previewFrame;
     Ui::MainWindow *ui;
     QMediaPlayer * mediaplayer;
     QMediaPlayer* mediaplayer2;
+    WAVFILEHEADER WavFileHeader;
 
     QString filepath; // 文件
     QStringList playList;//播放列表
@@ -40,6 +57,8 @@ private:
     qint64 pause_time;
     qint64 last_begin_to_reverse;
     QString file_reverse;
+    Audio_WAVE audio_wave;
+    int height;
 
 //    static QAudioOutput        *audioOutput;
 //    static QIODevice           *streamOut;
@@ -62,6 +81,11 @@ private:
     void mouseReleaseEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
     bool eventFilter(QObject *obj, QEvent *e);
+
+    void parseWVV();
+
+    void doBeforeChangeMedia(QString nextFilename);
+
 
 
 
@@ -106,9 +130,9 @@ private slots:
 
     void updateInfo();
 
-    void ProcessFrame(QVideoFrame &frame);
+//    void ProcessFrame(QVideoFrame &frame);
 
-    void presentframe(const QVideoFrame & frame);
+//    void presentframe(const QVideoFrame & frame);
 
     void keyPressEvent(QKeyEvent *e);
 
@@ -127,6 +151,16 @@ private slots:
     void on_horizontalSlider_2_sliderMoved(int position);
 
     void on_horizontalSlider_2_valueChanged(int value);
+
+    int openCodecContext(const AVFormatContext* pFormatCtx, int* pStreamIndex, enum AVMediaType type, AVCodecContext** ppCodecCtx);
+
+    void setPreviewFrame(QImage);
+    void ffmpegtest(double);
+//    void saveFrame(AVFrame* pFrame, int width, int height, int iFrame);
+    void testWav();
+
+
+
 };
 
 #endif // MAINWINDOW_H

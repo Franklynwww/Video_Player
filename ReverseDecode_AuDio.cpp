@@ -293,9 +293,10 @@ int ReverseDecode_Audio::DecodDataPack2()
             //因为是倒放.下一帧的时间肯定要比上一帧小,如果大于说明帧有问题不能显示
             if (pos_ms<m_oldPosMs)
             {
+
 //                qDebug()<<"audio_pos"<<audio_pack.at(i).audio_clock;
                 //通知界面更新
-                emit SendOneAudioFrame(audio_pack.at(i).audio);
+                emit SendOneAudioFrame(audio_pack.at(i).audio,audio_pack.at(i).audio_clock);
 //                qDebug()<<"pos_before_emit"<<pos_ms<<"m_run"<<m_run;
                 if(audio_pack.at(i).audio_clock < 0.1){
                     qDebug()<<"为0了";

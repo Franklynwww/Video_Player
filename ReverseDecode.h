@@ -7,6 +7,7 @@
 #include <QQueue>
 #include <QFileInfo>
 #include<QAudioOutput>
+#include"Global_Clock.h"
 extern "C" {
 #include <libavutil/opt.h>
 #include <libavutil/mem.h>
@@ -88,6 +89,8 @@ public:
 
 //    void execute();
 
+//    PALY_CLOCK_S m_PalyClock;
+
 
 
 
@@ -98,7 +101,7 @@ protected:
 
 signals:
     void positionChanged1(qint64 ms);
-    void SendOneFrame(QImage,QByteArray,int); //输出信号
+    void SendOneFrame(QImage,double); //输出信号
     void ss_ReversePlayFinish(); //倒放完成..--暂停或者停止的时候发出信号
     void isDone();
     void started();
