@@ -236,6 +236,8 @@ void ReverseDecode_Audio::run()
 {
     emit started2();
     this->finished = false;
+    audio_pack.clear();
+    over_pack.clear();
 
 
     LogSend("开始播放视频.\n");
@@ -294,19 +296,19 @@ int ReverseDecode_Audio::DecodDataPack2()
             if (pos_ms<m_oldPosMs)
             {
 
-//                qDebug()<<"audio_pos"<<audio_pack.at(i).audio_clock;
+                qDebug()<<"audio_pos"<<audio_pack.at(i).audio_clock;
                 //通知界面更新
                 emit SendOneAudioFrame(audio_pack.at(i).audio,audio_pack.at(i).audio_clock);
 //                qDebug()<<"pos_before_emit"<<pos_ms<<"m_run"<<m_run;
-                if(audio_pack.at(i).audio_clock < 0.1){
-                    qDebug()<<"为0了";
-                    this->finished = true;
-                }
+//                if(audio_pack.at(i).audio_clock < 0.1){
+//                    qDebug()<<"为0了";
+//                    this->finished = true;
+//                }
                 //更新时间
                 m_oldPosMs = pos_ms;
-                if (this->no_video_signal == true){
-                   emit positionChanged2(pos_ms);
-                }
+//                if (this->no_video_signal == true){
+//                   emit positionChanged2(pos_ms);
+//                }
                 //同步画面,看起来差不多
                 //QThread::msleep(40);
                 QThread::msleep(m_DifferTime);
@@ -632,6 +634,6 @@ int ReverseDecode_Audio::StartPlayAudio()
 
 void ReverseDecode_Audio::no_video_handle(){
     qDebug()<<"收到了";
-    this->no_video_signal  = true;
+//    this->no_video_signal  = true;
 }
 

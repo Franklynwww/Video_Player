@@ -7,6 +7,9 @@
 #include <QLabel>
 #include <QTime>
 #include<QAudioOutput>
+#include<QTimer>
+
+#include<QCoreApplication>
 
 ///显示视频用的widget
 ///这个仅仅是显示视频画面的控件
@@ -20,6 +23,7 @@ public:
 
     //画面旋转度数
     int m_nRotateDegree;
+    double volumn;
     void Set_Rotate(int Rotate);
     //获取当前图像
     QImage GetImage();
@@ -31,12 +35,18 @@ public:
     qint64 m_pos_time=0;
     QImage src_mImage;
     QImage mImage; //记录当前的图像
+    int type;
 
     QAudioOutput        *audioOutput;
     QIODevice           *streamOut;
 
+//    QTimer*  m_pTimer_video;
+//    QTimer*  m_pTimer_audio;
+
 signals:
     void s_VideoWidgetEvent(int type);
+    void positionchanged(qint64 pos);
+    void main_sleep();
 
 protected:
     void paintEvent(QPaintEvent *event);
@@ -47,6 +57,9 @@ public slots:
     void slotSetOneFrame(QImage,double);
     void slotSetOneAudioFrame(QByteArray,double);
     void threadStarted();
+    void unlock_mutex();
+//    void on_timer_timeout_audio();
+//    void on_timer_timeout_video();
 };
 
 #endif // VideoFrameDisplay_H

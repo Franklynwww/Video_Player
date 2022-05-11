@@ -81,6 +81,11 @@ public:
     qint32 GetDifferTimer() { return m_DifferTime; }
 
 
+    QList<struct AUDIO_FRAME> audio_pack;
+//    QList <struct IMAGE_FRAME> over_pack; //上次解码没有用完的包
+    QList<struct AUDIO_FRAME> over_pack;
+
+
 
 
 
@@ -100,9 +105,7 @@ private:
     int video_width = 0;
     int video_height = 0;
 //    QList <struct IMAGE_FRAME> video_pack;
-    QList<struct AUDIO_FRAME> audio_pack;
-//    QList <struct IMAGE_FRAME> over_pack; //上次解码没有用完的包
-    QList<struct AUDIO_FRAME> over_pack;
+
     AVFormatContext *format_ctx = nullptr;
     int video_stream_index = -1;
     AVFrame *RGB24_pFrame = nullptr;

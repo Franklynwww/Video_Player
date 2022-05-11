@@ -58,13 +58,14 @@ protected:
 
 signals:
     void isDone(QImage);
+//    void notDone();
 
 public:
     QString filename;
     qint64 time;
     QImage frame;
     double getDistance(double a,double b);
-//    int m_run;
+//    int m_run = 0;
 
 //    void reset();
 //    void stop();

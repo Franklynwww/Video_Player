@@ -7,6 +7,7 @@
 #include<QCloseEvent>
 #include<QAudioOutput>
 #include"qcustomplot.h"
+#include"judge_type.h"
 
 //#include"openfilethread.h"
 #include"ReverseDecode.h"
@@ -31,6 +32,7 @@ public:
     ~MainWindow();
 
 private:
+    int type;
     QQueue<float> m_dataQueue;
     int m_bufferSize = 50;
     int max;
@@ -47,6 +49,12 @@ private:
     QMediaPlayer * mediaplayer;
     QMediaPlayer* mediaplayer2;
     WAVFILEHEADER WavFileHeader;
+    QTimer*  m_pTimer;
+    QTimer*  m_pTimer_fullscreen;
+
+    bool continue_;
+    bool isFullScreen;
+    bool isReverse;
 
     QString filepath; // 文件
     QStringList playList;//播放列表
@@ -59,6 +67,9 @@ private:
     QString file_reverse;
     Audio_WAVE audio_wave;
     int height;
+
+    int preframe_mouse_x;
+
 
 //    static QAudioOutput        *audioOutput;
 //    static QIODevice           *streamOut;
@@ -86,11 +97,138 @@ private:
 
     void doBeforeChangeMedia(QString nextFilename);
 
+    int ori_widget_x;
+    int ori_widget_y;
+    int ori_widget_width;
+    int ori_widget_height;
+
+    int ori_widget_2_x;
+    int ori_widget_2_y;
+    int ori_widget_2_width;
+    int ori_widget_2_height;
+
+    int ori_widget_3_x;
+    int ori_widget_3_y;
+    int ori_widget_3_width;
+    int ori_widget_3_height;
+
+
+    int ori_horizontalSlider_x;
+    int ori_horizontalSlider_y;
+    int ori_horizontalSlider_width;
+    int ori_horizontalSlider_height;
+
+    int ori_horizontalSlider_2_x;
+    int ori_horizontalSlider_2_y;
+    int ori_horizontalSlider_2_width;
+    int ori_horizontalSlider_2_height;
+
+
+
+
+    int ori_toolbutton_10_x;
+    int ori_toolbutton_10_y;
+    int ori_toolbutton_10_width;
+    int ori_toolbutton_10_height;
+
+    int ori_toolbutton_x;
+    int ori_toolbutton_y;
+    int ori_toolbutton_width;
+    int ori_toolbutton_height;
+
+    int ori_toolbutton_2_x;
+    int ori_toolbutton_2_y;
+    int ori_toolbutton_2_width;
+    int ori_toolbutton_2_height;
+
+    int ori_toolbutton_3_x;
+    int ori_toolbutton_3_y;
+    int ori_toolbutton_3_width;
+    int ori_toolbutton_3_height;
+
+    int ori_toolbutton_4_x;
+    int ori_toolbutton_4_y;
+    int ori_toolbutton_4_width;
+    int ori_toolbutton_4_height;
+
+
+    int ori_toolbutton_5_x;
+    int ori_toolbutton_5_y;
+    int ori_toolbutton_5_width;
+    int ori_toolbutton_5_height;
+
+    int ori_toolbutton_6_x;
+    int ori_toolbutton_6_y;
+    int ori_toolbutton_6_width;
+    int ori_toolbutton_6_height;
+
+    int ori_combox_x;
+    int ori_combox_y;
+    int ori_combox_width;
+    int ori_combox_height;
+
+
+    int ori_toolbutton_7_x;
+    int ori_toolbutton_7_y;
+    int ori_toolbutton_7_width;
+    int ori_toolbutton_7_height;
+
+    int ori_toolbutton_8_x;
+    int ori_toolbutton_8_y;
+    int ori_toolbutton_8_width;
+    int ori_toolbutton_8_height;
+
+    int ori_toolbutton_9_x;
+    int ori_toolbutton_9_y;
+    int ori_toolbutton_9_width;
+    int ori_toolbutton_9_height;
+
+    int ori_label_x;
+    int ori_label_y;
+    int ori_label_width;
+    int ori_label_height;
+
+    int ori_label_2_x;
+    int ori_label_2_y;
+    int ori_label_2_width;
+    int ori_label_2_height;
+
+    int ori_label_3_x;
+    int ori_label_3_y;
+    int ori_label_3_width;
+    int ori_label_3_height;
+
+
+    int ori_label_5_x;
+    int ori_label_5_y;
+    int ori_label_5_width;
+    int ori_label_5_height;
+
+    int ori_label_6_x;
+    int ori_label_6_y;
+    int ori_label_6_width;
+    int ori_label_6_height;
+
+    int ori_label_7_x;
+    int ori_label_7_y;
+    int ori_label_7_width;
+    int ori_label_7_height;
+
+    int ori_verticalSlider_x;
+    int ori_verticalSlider_y;
+    int ori_verticalSlider_width;
+    int ori_verticalSlider_height;
+
+
+
+
+
 
 
 
 signals:
     void playListChanged();
+    void unlock_signal();
 
 
 private slots:
@@ -155,12 +293,20 @@ private slots:
     int openCodecContext(const AVFormatContext* pFormatCtx, int* pStreamIndex, enum AVMediaType type, AVCodecContext** ppCodecCtx);
 
     void setPreviewFrame(QImage);
+//    void restartPreviewFrame();
     void ffmpegtest(double);
 //    void saveFrame(AVFrame* pFrame, int width, int height, int iFrame);
     void testWav();
+    void on_timer_timeout();
+    void on_timer_timeout_fullscreen();
 
 
 
+    void on_toolButton_10_clicked();
+
+    void sleepforms();
+
+    void threadFinished2();
 };
 
 #endif // MAINWINDOW_H

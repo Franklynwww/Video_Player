@@ -53,7 +53,8 @@ void PreviewFrame::GetFutureFrame(qint64 time,QString filename){
     while(packet.pts*av_q2d(pFormatCtx->streams[packet.stream_index]->time_base)-this->time<2) {
 //        if(this->m_run == 2){
 //            qDebug()<<"结束了";
-//            avformat_close_input(&pFormatCtx);
+//            frame = QImage();
+////            avformat_close_input(&pFormatCtx);
 //            return;
 //        }
         av_read_frame(pFormatCtx, &packet);
@@ -101,10 +102,19 @@ void PreviewFrame::GetFutureFrame(qint64 time,QString filename){
 
 void PreviewFrame::run(){
 
+
 //    this->m_run = 1;
 //    this->reset();
     this->GetFutureFrame(this->time,this->filename);
-    emit isDone(this->frame);
+//    qDebug()<<"m_run"<<m_run;
+//    if(m_run == 1){
+        emit isDone(this->frame);
+//    }
+//    else{
+//        qDebug()<<"发出了";
+//        emit notDone();
+//    }
+//    qDebug()<<"preframe结束了";
 
 }
 
@@ -152,6 +162,7 @@ void PreviewFrame::getClosetPacket(QList<PACKET_FRAME> packet_pointers){
 ////    this->time = 0;
 //}
 //void PreviewFrame::stop(){
+////    this->terminate();
 //    this->m_run = 2;
 //}
 

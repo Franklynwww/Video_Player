@@ -8,6 +8,9 @@ VideoFrameDisplay::VideoFrameDisplay(QWidget *parent) :
 {
     m_nRotateDegree=0;
     this->setMouseTracking(true);
+
+
+
 }
 
 VideoFrameDisplay::~VideoFrameDisplay()
@@ -33,7 +36,9 @@ void VideoFrameDisplay::paintEvent(QPaintEvent *event)
     painter.setBrush(Qt::black);
     painter.drawRect(0,0,this->width(),this->height()); //先画成黑色
 
+
     if (mImage.size().width() <= 0) return;
+
 
     //将图像按比例缩放成和窗口一样大小
     QImage img = mImage.scaled(this->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation); //这里效率比较低下  还不知道如何优化
@@ -64,6 +69,13 @@ void VideoFrameDisplay::paintEvent(QPaintEvent *event)
 void VideoFrameDisplay::slotSetOneFrame(QImage img,double video_clock)
 {
 
+
+
+//    qDebug()<<"locked"<<video_mutex.tryLock();
+    video_mutex.lock();
+
+    qDebug()<<"video pos"<<video_clock;
+
 //            double audioTime = get_clock(&play_clock_s);
 
             //如果读取到无效的时钟时间的话则continue
@@ -88,7 +100,7 @@ void VideoFrameDisplay::slotSetOneFrame(QImage img,double video_clock)
                       src_mImage =mImage = img;
                  //    qDebug()<<img.size();
                  //    img.save("D:\\images\\0.jpg");
-                      update(); //调用update将执行 paintEvent函数
+                      repaint(); //调用update将执行 paintEvent函数
 //}
 //            }
 //            else//视频时钟比主时钟慢，则丢弃该帧
@@ -99,18 +111,47 @@ void VideoFrameDisplay::slotSetOneFrame(QImage img,double video_clock)
 //                return;
 //            }
 
+//              video_mutex = false;
+              emit positionchanged(video_clock * 1000);
+//              qDebug()<<"video_mutex"<<video_mutex;
+//              while(!video_mutex);
+//       m_pTimer_video->start(40);
+//                      emit main_sleep();
+                      video_mutex.unlock();
 
 
 }
 
 void VideoFrameDisplay::slotSetOneAudioFrame(QByteArray byt,double audio_clock){
 //    qDebug()<<"在播了";
+
+    audio_mutex.lock();
+    qDebug()<<"audio pos"<<audio_clock;
     int writeBytes = qMin(byt.length(), audioOutput->bytesFree());
 //    qDebug()<<"writeBytes"<<writeBytes;
+//    qDebug()<<"音量为"<<audioOutput->volume();
+
+//    qDebug()<<"调整后的音量为"<<this->volumn;
+
+    audioOutput->setVolume(this->volumn);
     streamOut->write(byt.data(), writeBytes);
     byt = byt.right(byt.length() - writeBytes);
+    if(type == 0){
+//        audio_mutex = false;
+        emit positionchanged(audio_clock * 1000);
+//        while(!audio_mutex);
+    }
 
+//    emit main_sleep();
+    audio_mutex.unlock();
 //    set_clock(&play_clock_s,audio_clock,0);
+
+//    QEventLoop eventloop;
+//    QTimer::singleShot(40, &eventloop, SLOT(quit()));
+//    eventloop.exec();
+
+//    m_pTimer_audio->stop();
+//    m_pTimer_audio->start(40);
 
 }
 
@@ -150,3 +191,19 @@ void VideoFrameDisplay::threadStarted(){
     audioOutput = new QAudioOutput(fmt);
     streamOut = audioOutput->start();
 }
+
+void VideoFrameDisplay::unlock_mutex(){
+//    video_mutex.tryLock();
+//    audio_mutex.tryLock();
+//    video_mutex.unlock();
+//    audio_mutex.unlock();
+}
+
+//void VideoFrameDisplay::on_timer_timeout_audio(){
+//    qDebug()<<"audo解锁";
+//    audio_mutex.unlock();
+//}
+
+//void VideoFrameDisplay::on_timer_timeout_video(){
+//    video_mutex.unlock();
+//}

@@ -91,6 +91,12 @@ public:
 
 //    PALY_CLOCK_S m_PalyClock;
 
+    QList <struct IMAGE_FRAME> video_pack;
+//    QList<struct AUDIO_FRAME> audio_pack;
+    QList <struct IMAGE_FRAME> over_pack; //上次解码没有用完的包
+
+
+
 
 
 
@@ -110,9 +116,7 @@ signals:
 private:
     int video_width = 0;
     int video_height = 0;
-    QList <struct IMAGE_FRAME> video_pack;
-//    QList<struct AUDIO_FRAME> audio_pack;
-    QList <struct IMAGE_FRAME> over_pack; //上次解码没有用完的包
+
 //    QList<struct AUDIO_FRAME> over_pack2;
     AVFormatContext *format_ctx = nullptr;
     int video_stream_index = -1;

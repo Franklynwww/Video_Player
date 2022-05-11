@@ -36,6 +36,7 @@ SOURCES += \
     VideoJPG.cpp \
     VideoSurface.cpp \
     get_audio_wave.cpp \
+    judge_type.cpp \
         main.cpp \
         mainwindow.cpp \
     qcustomplot.cpp \
@@ -53,6 +54,7 @@ HEADERS += \
     VideoSurface.h \
     WAVFILEHEADER.h \
     get_audio_wave.h \
+    judge_type.h \
         mainwindow.h \
     qcustomplot.h \
     resolve_wav_wave.h \

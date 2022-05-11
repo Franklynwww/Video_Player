@@ -239,6 +239,8 @@ void ReverseDecode::run()
 {
     emit started();
     this->finished = false;
+    video_pack.clear();
+    over_pack.clear();
 
 
     LogSend("开始播放视频.\n");
@@ -253,11 +255,10 @@ void ReverseDecode::run()
 int ReverseDecode::DecodDataPack()
 {
 //    qDebug()<<"size of video_pack"<<video_pack.size();
-    if(video_pack.size() == 0){
-        emit noVideo();
-        this->finished = true;
-        return 0;
-    }
+//    if(video_pack.size() == 0){
+////        this->finished = true;
+//        StopPlay();
+//    }
 
     //判断上次是否还有没有播放完的包
     if (over_pack.size() > 0)
@@ -297,7 +298,8 @@ int ReverseDecode::DecodDataPack()
             //因为是倒放.下一帧的时间肯定要比上一帧小,如果大于说明帧有问题不能显示
             if (pos_ms<m_oldPosMs)
             {
-//                qDebug()<<"video_pos"<<pos_ms;
+                qDebug()<<"video_pos"<<pos_ms;
+
                 //通知界面更新
 
                 emit SendOneFrame(video_pack.at(i).image.copy(),video_pack.at(i).video_clock);
@@ -307,7 +309,7 @@ int ReverseDecode::DecodDataPack()
                 }
                 //更新时间
                 m_oldPosMs = pos_ms;
-                emit positionChanged1(pos_ms);
+//                emit positionChanged1(pos_ms);
                 //同步画面,看起来差不多
                 //QThread::msleep(40);
                 QThread::msleep(m_DifferTime);
