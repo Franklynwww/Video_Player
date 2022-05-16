@@ -48,10 +48,18 @@ signals:
     void positionchanged(qint64 pos);
     void main_sleep();
 
+    void callaudiosleep(qint64);
+    void callvideosleep(qint64);
+
+    void change_audio_s_video_time(qint64);
+
 protected:
     void paintEvent(QPaintEvent *event);
 
     void mouseDoubleClickEvent(QMouseEvent *e);
+
+
+
 public slots:
     ///播放器相关的槽函数
     void slotSetOneFrame(QImage,double);
@@ -60,6 +68,7 @@ public slots:
     void unlock_mutex();
 //    void on_timer_timeout_audio();
 //    void on_timer_timeout_video();
+
 };
 
 #endif // VideoFrameDisplay_H

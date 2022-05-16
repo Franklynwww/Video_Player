@@ -23,6 +23,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
 
+//    audio_wave.init("");
+
+
+
+
 //    int a = judgetype("D:/qtproject/Video_Player/video_test/音乐磁场 - 尘缘8.mp4");
 //    qDebug()<<(a==AUDIO_TYPE);
 //    QTime t;
@@ -30,15 +35,11 @@ MainWindow::MainWindow(QWidget *parent) :
 //    while(t.elapsed()<500)
 //        QCoreApplication::processEvents();
 //    qDebug()<<"出来了";
-    QDesktopWidget* desktopWidget = QApplication::desktop();
-    QRect deskRect = desktopWidget->availableGeometry();
-    double availableScreenX = deskRect.width();
-    double availableScreenY = deskRect.height();
-//    ui->centralWidget->resize(availableScreenX/2,availableScreenY/2);
+
 //    ui->centralWidget->setWindowFlags(Qt::Window);
 //    ui->centralWidget->showFullScreen();
-    qDebug()<<"available screenX"<<availableScreenX;
-    qDebug()<<"available screenY"<<availableScreenY;
+//    qDebug()<<"available screenX"<<availableScreenX;
+//    qDebug()<<"available screenY"<<availableScreenY;
     this->grabKeyboard();
     ui->setupUi(this);
     //设置主界面背景
@@ -53,6 +54,112 @@ MainWindow::MainWindow(QWidget *parent) :
     mediaplayer = new QMediaPlayer(this);
     //设置对应mediaplayer的QVideoWidget
     mediaplayer->setVideoOutput(ui->widget);
+
+    QDesktopWidget* desktopWidget = QApplication::desktop();
+    QRect deskRect = desktopWidget->availableGeometry();
+    availableScreenX = deskRect.width();
+    availableScreenY = deskRect.height();
+//    ui->centralWidget->setWindowFlags (Qt::Window);
+
+    ui->widget->move(availableScreenX/50,availableScreenY/50);
+    ui->widget->resize((double)availableScreenX/2.3,(double)availableScreenY/2.3);
+
+    ui->widget_2->move(availableScreenX/50,availableScreenY/50);
+    ui->widget_2->resize((double)availableScreenX/2.3,(double)availableScreenY/2.3);
+
+    ui->widget_3->move(availableScreenX/50,availableScreenY/50);
+    ui->widget_3->resize((double)availableScreenX/2.3,(double)availableScreenY/2.3);
+
+
+    ui->listWidget->move(ui->widget->x() + ui->widget->width() + availableScreenX/110, ui->widget->y());
+    ui->listWidget->resize(availableScreenX/8,(double)availableScreenY/2.3);
+
+    ui->textBrowser->move(ui->listWidget->x() + ui->listWidget->width() + availableScreenX/110, ui->widget->y());
+    ui->textBrowser->resize(availableScreenX/8,(double)availableScreenY/2.3);
+
+    ui->toolButton->move(ui->widget->x(),ui->widget->y() + ui->widget->height() + availableScreenY/50);
+    ui->toolButton->resize(availableScreenX/32,availableScreenY/22);
+
+    ui->toolButton_5->move(ui->toolButton->x() + ui->toolButton->width() + availableScreenX/120,ui->toolButton->y());
+    ui->toolButton_5->resize(availableScreenX/32,availableScreenY/22);
+
+    ui->toolButton_6->move(ui->toolButton_5->x() + ui->toolButton_5->width() + availableScreenX/120,ui->toolButton_5->y());
+    ui->toolButton_6->resize(availableScreenX/32,availableScreenY/22);
+
+    ui->horizontalSlider->move(ui->toolButton_6->x() + ui->toolButton_6->width() + availableScreenX/120,ui->toolButton_6->y());
+    ui->horizontalSlider->resize(availableScreenX/4,availableScreenY/22);
+
+    ui->toolButton_2->move(ui->horizontalSlider->x() + ui->horizontalSlider->width() + availableScreenX /110, ui->horizontalSlider->y());
+    ui->toolButton_2->resize(availableScreenX/32,availableScreenY/22);
+
+    ui->toolButton_3->move(ui->toolButton_2->x() + ui->toolButton_2->width() + availableScreenX/120,ui->toolButton_2->y());
+    ui->toolButton_3->resize(availableScreenX/25,availableScreenY/22);
+
+    ui->toolButton_4->move(ui->toolButton_3->x() + ui->toolButton_3->width() + availableScreenX/120,ui->toolButton_3->y());
+    ui->toolButton_4->resize(availableScreenX/25,availableScreenY/22);
+
+    ui->comboBox->move(ui->toolButton_4->x() + ui->toolButton_4->width() + availableScreenX/120,ui->toolButton_4->y());
+    ui->comboBox->resize(availableScreenX/20,availableScreenY/22);
+
+    ui->toolButton_7->move(ui->comboBox->x() + ui->comboBox->width() + availableScreenX/120,ui->comboBox->y());
+    ui->toolButton_7->resize(availableScreenX/32,availableScreenY/22);
+
+    ui->toolButton_8->move(ui->toolButton_7->x() + ui->toolButton_7->width() + availableScreenX/120,ui->toolButton_7->y());
+    ui->toolButton_8->resize(availableScreenX/20,availableScreenY/22);
+
+
+    ui->toolButton_10->move(ui->toolButton_8->x() + ui->toolButton_8->width() + availableScreenX/120,ui->toolButton_8->y());
+    ui->toolButton_10->resize(availableScreenX/20,availableScreenY/22);
+
+    ui->verticalSlider->move(ui->toolButton_10->x() + ui->toolButton_10->width() + availableScreenX/120,ui->toolButton_10->y() - availableScreenY/5 + ui->toolButton_10->height());
+    ui->verticalSlider->resize(availableScreenX/50,availableScreenY/5);
+
+    ui->label->move(ui->horizontalSlider->x() + ui->horizontalSlider->width() - availableScreenX/18, ui->horizontalSlider->y() - availableScreenY/98);
+    ui->label->resize(availableScreenX/18,availableScreenY/50);
+
+    ui->label_3->move(ui->label->x() - 10, ui->label->y());
+    ui->label_3->resize(9,availableScreenY/50);
+//    ui->label_3->setText("/");
+
+    ui->label_2->move(ui->label_3->x() - availableScreenX/18 - 2, ui->label->y());
+    ui->label_2->resize(availableScreenX/18,availableScreenY/50);
+
+
+    ui->label_4->resize(availableScreenX/10,availableScreenY/8);
+
+    ui->toolButton_9->move(ui->toolButton->x(),ui->toolButton->y());
+    ui->toolButton_9->resize(availableScreenX/32,availableScreenY/22);
+
+    ui->horizontalSlider_2->move(ui->toolButton_9->x() + ui->toolButton_9->width()+availableScreenX/120,ui->toolButton->y());
+    ui->horizontalSlider_2->resize(availableScreenX/4 + availableScreenX/15, availableScreenY/22);
+
+    ui->label_6->move(ui->horizontalSlider_2->x() + ui->horizontalSlider_2->width() - availableScreenX/18, ui->horizontalSlider_2->y() - availableScreenY/98);
+    ui->label_6->resize(availableScreenX/18,availableScreenY/50);
+
+    ui->label_7->move(ui->label_6->x() - 10, ui->label_6->y());
+    ui->label_7->resize(9,availableScreenY/50);
+//    ui->label_3->setText("/");
+
+    ui->label_5->move(ui->label_7->x() - availableScreenX/18 - 2, ui->label_6->y());
+    ui->label_5->resize(availableScreenX/18,availableScreenY/50);
+
+//    ui->widget_2->resize(100,1000);
+//    ui->widget_3->resize(100,1000);
+//    ui->listWidget->resize(100,1000);
+//    ui->textBrowser->resize(100,1000);
+
+//    ui->centralWidget->setWindowFlag(Qt::Window);
+    ui->centralWidget->setFixedSize((double)availableScreenX/1.15,(double)availableScreenY/1.7);
+
+
+//    ui->centralWidget->move(availableScreenX*0.25,availableScreenY*0.25);
+//    ui->centralWidget->resize(1300,2300);
+//    ui->centralWidget->
+//    ui->centralWidget->setWindowFlags (Qt::SubWindow);
+//    qDebug()<<QDir::currentPath()+"/小蓓蕾组合 - 当我们同在一起.mkv";
+//    this->mediaplayer->setMedia(QUrl::fromLocalFile(QDir::currentPath()+"/小蓓蕾组合 - 当我们同在一起.mkv"));
+//    this->play();
+
     //设置播放按钮
     ui->toolButton->raise();
     ui->toolButton->setToolTip("播放");
@@ -146,6 +253,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->comboBox->installEventFilter(this);
     ui->comboBox->setMouseTracking(true);
 
+    ui->widget_3->installEventFilter(this);
+    ui->widget_3->setMouseTracking(true);
 
 
 
@@ -155,6 +264,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
 
+
+    connect(ui->widget_2,SIGNAL(callvideosleep(qint64)),this,SLOT(videosleep(qint64)));
+
+    connect(ui->widget_2,SIGNAL(callaudiosleep(qint64)),this,SLOT(audiosleep(qint64)));
+
+    connect(ui->widget_2,SIGNAL(change_audio_s_video_time(qint64)),this,SLOT(set_audio_s_video_time(qint64)),Qt::DirectConnection);
 
 //    ui->centralWidget->installEventFilter(this);
     // 9. 刷新列表
@@ -163,6 +278,9 @@ MainWindow::MainWindow(QWidget *parent) :
     // 10.倒放
     //关联视频解码器
     connect(&DecodeWork, SIGNAL(SendOneFrame(QImage,double)), ui->widget_2, SLOT(slotSetOneFrame(QImage,double)),Qt::BlockingQueuedConnection);
+
+
+    connect(this,SIGNAL(callVideoStop()),&DecodeWork,SLOT(finish()));
 
     //当前时间
     ui->horizontalSlider_2->installEventFilter(this);
@@ -183,7 +301,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(&DecodeWorkAudio,SIGNAL(isDone2()),this,SLOT(threadFinished()));
 
 
-    connect(&DecodeWork,SIGNAL(noVideo()),&DecodeWorkAudio,SLOT(no_video_handle()));
+    connect(&DecodeWork,SIGNAL(noVideo()),this,SLOT(no_video_handle()));
 
     connect(&previewFrame,SIGNAL(isDone(QImage)),this,SLOT(setPreviewFrame(QImage)));
 
@@ -192,11 +310,15 @@ MainWindow::MainWindow(QWidget *parent) :
 
     m_pTimer = new QTimer(this);
     m_pTimer_fullscreen = new QTimer(this);
+    m_pTimer_preframe = new QTimer();
+
 
     connect(m_pTimer, SIGNAL(timeout()), this, SLOT(on_timer_timeout()));
     connect(m_pTimer_fullscreen, SIGNAL(timeout()), this, SLOT(on_timer_timeout_fullscreen()));
-
-
+    m_pTimer_preframe->moveToThread(&previewFrame);
+    connect(&previewFrame,SIGNAL(begintoread()),this,SLOT(start_timer()),Qt::DirectConnection);
+    connect(m_pTimer_preframe,SIGNAL(timeout()),this,SLOT(setCallBack()),Qt::DirectConnection);
+    connect(&previewFrame,SIGNAL(finishedread()),this,SLOT(stoptimer()),Qt::DirectConnection);
 //    connect(this,SIGNAL(unlock_signal()),ui->widget_2,SLOT(unlock_mutex()),Qt::DirectConnection);
     this->filepath = QDir::currentPath()+"/playList.txt";
     qDebug()<<this->filepath;
@@ -358,6 +480,11 @@ MainWindow::MainWindow(QWidget *parent) :
     this->ori_label_3_width = ui->label_3->width();
     this->ori_label_3_height = ui->label_3->height();
 
+    this->ori_label_4_x = ui->label_4->x();
+    this->ori_label_4_y = ui->label_4->y();
+    this->ori_label_4_width = ui->label_4->width();
+    this->ori_label_4_height = ui->label_4->height();
+
     this->ori_label_5_x = ui->label_5->x();
     this->ori_label_5_y = ui->label_5->y();
     this->ori_label_5_width = ui->label_5->width();
@@ -394,6 +521,8 @@ MainWindow::MainWindow(QWidget *parent) :
 //    ui->verticalSlider->raise();
 
     ui->widget->setAspectRatioMode(Qt::KeepAspectRatio);
+
+    PreviewFrame::callback1 = false;
 
 //    ui->widget_3->setBackground(QColor(255,255,255,0));
 
@@ -460,8 +589,42 @@ void MainWindow::mediaStateChanged(QMediaPlayer::State state){//槽函数，触�
 }
 
 void MainWindow::postionChanged(qint64 position){//槽函数，触发条件：视频进度自动改变
+    if(position == 0 && this->mediaplayer->state() == QMediaPlayer::PlayingState){
+        zero_tolerence ++;
+        qDebug()<<"zero"<<zero_tolerence;
+        if(zero_tolerence == 10){
+            this->mediaplayer->stop();
+            this->mediaplayer->play();
+            zero_tolerence = 0;
+        }
+    }
     //
-    qDebug()<<"out_pos"<<position;
+//    qDebug()<<this->mediaplayer->state();
+//        QString curPath = this->playList[this->current_index];//获取当前应用程序目录
+//        curPath += "\n";
+//        if(this->mediaplayer->state() == QMediaPlayer::StoppedState){
+//            curPath += "QMediaPlayer::StoppedState\n";
+//        }
+//        if(this->mediaplayer->state() == QMediaPlayer::PlayingState){
+//            curPath += "QMediaPlayer::PlayingState\n";
+//        }
+//        if(this->mediaplayer->state() == QMediaPlayer::PausedState){
+//            curPath += "QMediaPlayer::PausedState\n";
+//        }
+
+
+
+//        QFile f("D:\\status.txt");
+//        if(!f.open(QIODevice::WriteOnly | QIODevice::Text))
+//        {
+//            qDebug() << ("打开文件失败");
+//        }
+//        QTextStream txtOutput(&f);
+//        QString str = curPath;
+//        txtOutput << str << endl;
+//        f.close();
+
+//    qDebug()<<"out_pos"<<position;
 //    qDebug()<<"out_old_pos"<<old_position;
 //    qDebug()<<"current_index"<<this->current_index;
 //    if(position < 1){
@@ -474,8 +637,8 @@ void MainWindow::postionChanged(qint64 position){//槽函数，触发条件：�
         return;
     }
     if(position >= this->mediaplayer->duration() && this->mediaplayer->duration()>0 && ui->toolButton_7->toolTip() == "单曲循环"){
-        this->mediaplayer->setMedia(QUrl::fromLocalFile(this->playList[this->current_index]));
         doBeforeChangeMedia(this->playList[this->current_index]);
+        this->mediaplayer->setMedia(QUrl::fromLocalFile(this->playList[this->current_index]));
         this->mediaplayer->play();
         return;
     }
@@ -496,14 +659,17 @@ void MainWindow::postionChanged(qint64 position){//槽函数，触发条件：�
 
 //    qDebug()<<"position"<<position;
 //    qDebug()<<"ori_position"<<ori_position;
-    if(this->type == AUDIO){
+    if(this->type == AUDIO & this->dontshow == false){
 
     if(position - old_position >= 300){
 
-        qDebug()<<"进来了";
-        qDebug()<<"pos"<<position;
-        qDebug()<<"old_pos"<<old_position;
+//        qDebug()<<"进来了";
+//        qDebug()<<"pos"<<position;
+//        qDebug()<<"old_pos"<<old_position;
         double new_wave_value = audio_wave.get_wave_value(position);
+        if(new_wave_value < 0){
+            return;
+        }
         if (m_dataQueue.size() >= m_bufferSize)
                 m_dataQueue.dequeue();
             m_dataQueue.enqueue(new_wave_value);
@@ -630,13 +796,15 @@ void MainWindow::on_toolButton_2_clicked()
             return;
         }
         qDebug()<<"文件名"<<filename;
+        doBeforeChangeMedia(filename);
         mediaplayer->setMedia(QUrl::fromLocalFile(filename));
 
 
-        doBeforeChangeMedia(filename);
+
 
 
         ui->toolButton->setAutoRaise(true);
+        this->setPosition(500);
         this->mediaplayer->play();
 
 
@@ -830,8 +998,9 @@ void MainWindow::on_listWidget_doubleClicked(const QModelIndex &index)
     {
         qDebug()<<"文件存在";
         this->current_index = cur_index;
-        this->mediaplayer->setMedia(QUrl::fromLocalFile(filename));
         doBeforeChangeMedia(filename);
+        this->mediaplayer->setMedia(QUrl::fromLocalFile(filename));
+
         this->play();
         for(int i = 0;i<this->playList.length();i++){
             if (i == this->current_index){
@@ -1177,9 +1346,9 @@ void MainWindow::getNextAccessible(int first_index){
         QFile file(nextfilename);
         if (file.exists()){
             this->current_index = cur_index;
-
-            this->mediaplayer->setMedia(QUrl::fromLocalFile(nextfilename));
             doBeforeChangeMedia(nextfilename);
+            this->mediaplayer->setMedia(QUrl::fromLocalFile(nextfilename));
+
 //            qDebug()<<"为何没有";
 
             this->play();
@@ -1205,8 +1374,9 @@ void MainWindow::getNextAccessible(int first_index){
         QFile file(nextfilename);
         if (file.exists()){
             this->current_index = cur_index;
-            this->mediaplayer->setMedia(QUrl::fromLocalFile(nextfilename));
             doBeforeChangeMedia(nextfilename);
+            this->mediaplayer->setMedia(QUrl::fromLocalFile(nextfilename));
+
             this->play();
             for(int i = 0;i<this->playList.length();i++){
                 if (i == this->current_index){
@@ -1243,8 +1413,8 @@ void MainWindow::getPreviousAccessible(int first_index){
         QFile file(prefilename);
         if (file.exists()){
             this->current_index = cur_index;
-            this->mediaplayer->setMedia(QUrl::fromLocalFile(prefilename));
             doBeforeChangeMedia(prefilename);
+            this->mediaplayer->setMedia(QUrl::fromLocalFile(prefilename));
             this->play();
             for(int i = 0;i<this->playList.length();i++){
                 if (i == this->current_index){
@@ -1269,8 +1439,9 @@ void MainWindow::getPreviousAccessible(int first_index){
         QFile file(prefilename);
         if (file.exists()){
             this->current_index = cur_index;
-            this->mediaplayer->setMedia(QUrl::fromLocalFile(prefilename));
             doBeforeChangeMedia(prefilename);
+            this->mediaplayer->setMedia(QUrl::fromLocalFile(prefilename));
+
             this->play();
             for(int i = 0;i<this->playList.length();i++){
                 if (i == this->current_index){
@@ -1455,7 +1626,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *e)
     if(this->isFullScreen == true && e->type() == QEvent::MouseMove){
         m_pTimer_fullscreen->stop();
         m_pTimer_fullscreen->start(5000);
-        qDebug()<<"设置了";
+//        qDebug()<<"设置了";
 //        if((mouse_x>=ui->verticalSlider->x() && mouse_x<= ui->verticalSlider->x()+ui->verticalSlider->width()&& mouse_y>=ui->verticalSlider->y()&& mouse_y<=ui->verticalSlider->y()+ui->verticalSlider->height())){
 //            qDebug()<<"在音量";
 //            qDebug()<<"设置了";
@@ -1472,6 +1643,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *e)
             ui->label->setVisible(true);
             ui->label_2->setVisible(true);
             ui->label_3->setVisible(true);
+            ui->label_4->setVisible(true);
             ui->toolButton_5->setVisible(true);
             ui->toolButton_6->setVisible(true);
 
@@ -1483,7 +1655,6 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *e)
             ui->label_6->setVisible(true);
             ui->label_7->setVisible(true);
         }
-        ui->label_4->setVisible(true);
         ui->toolButton_2->setVisible(true);
         ui->toolButton_3->setVisible(true);
         ui->toolButton_4->setVisible(true);
@@ -1503,6 +1674,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *e)
 //    }
     if(e->type() == QEvent::MouseMove && !(mouse_x>=ui->horizontalSlider->x() && mouse_x<= ui->horizontalSlider->x()+ui->horizontalSlider->width()&& mouse_y>=ui->horizontalSlider->y()&& mouse_y<=ui->horizontalSlider->y()+ui->horizontalSlider->height())){
         ui->label_4->setVisible(false);
+        previewFrame.m_run = 2;
         m_pTimer->stop();
 
 //        return true;
@@ -1551,7 +1723,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *e)
 //        qDebug()<<"进来了";
 
         if(e->type() == QEvent::MouseMove){
-            qDebug()<<"移动了";
+//            qDebug()<<"移动了";
 //            qDebug()<<"m_x"<<mouse_x;
 //            qDebug()<<"m_y"<<mouse_y;
 //            qDebug()<<"slider_x"<<ui->horizontalSlider->x();
@@ -1573,6 +1745,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *e)
 //            this->mouse_y = mouse_y;
 //            qDebug()<<"continue"<<continue_;
 //            continue_ = false;
+            previewFrame.m_run = 2;
             m_pTimer->stop();
             this->preframe_mouse_x = mouse_x;
             m_pTimer->start(1000);
@@ -1641,7 +1814,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *e)
 
     if(obj==ui->horizontalSlider_2)
     {
-        if (e->type()==QEvent::MouseButtonPress && ui->toolButton_8->text() == "停止倒放") //判断类型
+        if (e->type()==QEvent::MouseButtonRelease && ui->toolButton_8->text() == "停止倒放") //判断类型
         {
             QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(e);
             if (mouseEvent->button() == Qt::LeftButton)	//判断左键
@@ -1652,18 +1825,68 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *e)
    //           qDebug()<<ui->horizontalSlider->maximum();
 
 
+//                qint64 ori_position = ui->horizontalSlider_2->value();
                 qint64 position = mouse_x*ui->horizontalSlider_2->maximum()/ui->horizontalSlider_2->width();
+                if(position != ui->horizontalSlider_2->value()){
+                    if(this->type == VIDEO && ui->widget_2->type == 1){
+                        if(DecodeWork.GetSate() != 2){
+                            QMessageBox::warning(this, tr("Error"),
+                                                           tr("请先暂停再调节")
+                                                           );
+                        }
+                        else{
+                            for(int i=0;i<100;i++){
+                                int j =1;
+                            }
+        //                    DecodeWork.PausePlay();
+        //                    DecodeWorkAudio.PausePlay();
+                            ui->horizontalSlider_2->setValue(position);
+                            DecodeWork.SetSeekPos(position);
+                            DecodeWorkAudio.setVideoTime(position);
+                            DecodeWorkAudio.SetSeekPos(position);
+
+                        }
+                    }
+
+                    if(this->type == VIDEO && ui->widget_2->type == 0){
+                        if(DecodeWorkAudio.GetSate() != 2){
+                            QMessageBox::warning(this, tr("Error"),
+                                                           tr("请先暂停再调节")
+                                                           );
+                        }
+                        else{
+                            for(int i=0;i<100;i++){
+                                int j =1;
+                            }
+        //                    DecodeWork.PausePlay();
+        //                    DecodeWorkAudio.PausePlay();
+                            ui->horizontalSlider_2->setValue(position);
+//                            DecodeWork.SetSeekPos(position);
+                            DecodeWorkAudio.SetSeekPos(position);
+
+                        }
+                    }
+
+                    if(this->type == AUDIO){
+                        if(DecodeWorkAudio.GetSate() != 2){
+                            QMessageBox::warning(this, tr("Error"),
+                                                           tr("请先暂停再调节")
+                                                           );
+                        }
+                        else{
+                            for(int i=0;i<100;i++){
+                                int j =1;
+                            }
+                            qDebug()<<"改变pos";
+                            ui->horizontalSlider_2->setValue(position);
+        //                    DecodeWorkAudio.PausePlay();
+                            DecodeWorkAudio.SetSeekPos(position);
+
+                        }
+                    }
+                }
 
 
-                ui->horizontalSlider_2->setValue(position);
-                if(this->type == VIDEO){
-                    DecodeWork.SetSeekPos(position);
-                    DecodeWorkAudio.SetSeekPos(position);
-                }
-                if(this->type == AUDIO){
-                    qDebug()<<"改变pos";
-                    DecodeWorkAudio.SetSeekPos(position);
-                }
             }
         }
 
@@ -1818,7 +2041,7 @@ void MainWindow::on_toolButton_8_clicked()
 //            DecodeWork.SetSate(1);
             DecodeWorkAudio.SetSate(1);
 
-//            DecodeWork.LoadVideoFile(filename);
+            DecodeWork.LoadVideoFile(filename);
             DecodeWorkAudio.LoadVideoFile(filename);
             reverse_duration=DecodeWorkAudio.GetDuration(); //获取总时间
             ui->horizontalSlider_2->setMaximum(reverse_duration);  //设置最大值
@@ -1831,10 +2054,11 @@ void MainWindow::on_toolButton_8_clicked()
             DecodeWorkAudio.over_pack.clear();
 
 //            DecodeWork.start();
-            DecodeWorkAudio.SetSeekPos(ui->horizontalSlider_2->maximum());
+            DecodeWorkAudio.SetSeekPos(ui->horizontalSlider_2->maximum()-100);
             DecodeWorkAudio.start();
         }
         if(type == VIDEO){
+//            if(ui->widget_2->type == 1){
             ui->widget_2->src_mImage = QImage();
             ui->widget_2->mImage = QImage();
             ui->widget_2->setVisible(true);
@@ -1853,11 +2077,12 @@ void MainWindow::on_toolButton_8_clicked()
 
             ui->toolButton_9->setToolTip("暂停");
             ui->toolButton_9->setIcon(QPixmap(":/images/pause.png"));
-            DecodeWork.SetSate(1);
-            DecodeWorkAudio.SetSate(1);
+
 
             DecodeWork.LoadVideoFile(filename);
             DecodeWorkAudio.LoadVideoFile(filename);
+            DecodeWork.SetSate(1);
+            DecodeWorkAudio.SetSate(1);
             reverse_duration=DecodeWork.GetDuration(); //获取总时间
             ui->horizontalSlider_2->setMaximum(reverse_duration);  //设置最大值
             ui->horizontalSlider_2->setMinimum(0); //设置最小值
@@ -1868,10 +2093,12 @@ void MainWindow::on_toolButton_8_clicked()
             DecodeWorkAudio.audio_pack.clear();
             DecodeWorkAudio.over_pack.clear();
             qDebug()<<"max——duration"<<ui->horizontalSlider_2->maximum();
-            DecodeWork.SetSeekPos(ui->horizontalSlider_2->maximum());
+            DecodeWork.SetSeekPos(ui->horizontalSlider_2->maximum()-100);
             DecodeWork.start();
-            DecodeWorkAudio.SetSeekPos(ui->horizontalSlider_2->maximum());
+            DecodeWorkAudio.setVideoTime(ui->horizontalSlider_2->maximum()-100);
+            DecodeWorkAudio.SetSeekPos(ui->horizontalSlider_2->maximum()-100);
             DecodeWorkAudio.start();
+//            }
         }
 
         qDebug()<<"主线程";
@@ -1893,6 +2120,7 @@ void MainWindow::on_toolButton_8_clicked()
         ui->toolButton_7->setEnabled(true);
         ui->label->setVisible(true);
         ui->label_2->setVisible(true);
+
         ui->label_3->setVisible(true);
 //        ui->label_4->setVisible(true);
         ui->label_5->setVisible(false);
@@ -1906,8 +2134,13 @@ void MainWindow::on_toolButton_8_clicked()
 //            DecodeWork.over_pack.clear();
         }
         if(type == VIDEO){
+//            if(ui->widget_2->type==1){
             DecodeWork.StopPlay();
             DecodeWorkAudio.StopPlay();
+//            }
+//            if(ui->widget_2->type==0){
+//                DecodeWorkAudio.StopPlay();
+//            }
 //            video_mutex.unlock();
 //            audio_mutex.unlock();
 //            DecodeWork.video_pack.clear();
@@ -1929,6 +2162,7 @@ void MainWindow::on_toolButton_8_clicked()
        if(type == AUDIO){
            //           ui->widget_2->setVisible(false);
 
+            if(dontshow == false)
             ui->widget_3->setVisible(true);
        }
        if(type == VIDEO){
@@ -1937,14 +2171,12 @@ void MainWindow::on_toolButton_8_clicked()
        }
 //       qDebug()<<"file_reverse"<<file_reverse;
        this->current_index = this->playList.indexOf(file_reverse);
-       doBeforeChangeMedia(this->file_reverse);
+//       doBeforeChangeMedia(this->file_reverse);
 
 
        this->play();
        this->isReverse = false;
 //       DecodeWork.StopPlay();
-
-
 
     }
 }
@@ -1992,18 +2224,19 @@ void MainWindow::slotGetCurrentTime(qint64 pts){
 
 void MainWindow::on_toolButton_9_clicked()
 {
-    if(type == VIDEO){
+
+    if(type == VIDEO && ui->widget_2->type == 1){
     if (DecodeWork.GetSate() == 2){
 
 
-        ui->toolButton_9->setToolTip("暂停");
+        ui->toolButton_9->setToolTip("倒放暂停");
         ui->toolButton_9->setIcon(QPixmap(":/images/pause.png"));
         DecodeWork.SetSate(1);
 
     }
     else if(DecodeWork.GetSate() == 1)
     {
-        ui->toolButton_9->setToolTip("播放");
+        ui->toolButton_9->setToolTip("倒放播放");
         ui->toolButton_9->setIcon(QPixmap(":/images/play.png"));
         DecodeWork.SetSate(2);
     }
@@ -2015,6 +2248,7 @@ void MainWindow::on_toolButton_9_clicked()
 //        ui->toolButton_9->setIcon(QPixmap(":/images/pause.png"));
         DecodeWorkAudio.SetSate(1);
 
+
     }
     else if(DecodeWorkAudio.GetSate() == 1)
     {
@@ -2024,20 +2258,55 @@ void MainWindow::on_toolButton_9_clicked()
     }
     }
 
-    if(type == AUDIO){
+    if(type == VIDEO && ui->widget_2->type == 0){
     if (DecodeWorkAudio.GetSate() == 2){
 
 
-        ui->toolButton_9->setToolTip("暂停");
+        ui->toolButton_9->setToolTip("倒放暂停");
         ui->toolButton_9->setIcon(QPixmap(":/images/pause.png"));
         DecodeWorkAudio.SetSate(1);
 
     }
     else if(DecodeWorkAudio.GetSate() == 1)
     {
-        ui->toolButton_9->setToolTip("播放");
+        ui->toolButton_9->setToolTip("倒放播放");
         ui->toolButton_9->setIcon(QPixmap(":/images/play.png"));
         DecodeWorkAudio.SetSate(2);
+    }
+
+    if (DecodeWork.GetSate() == 2){
+
+
+//        ui->toolButton_9->setToolTip("暂停");
+//        ui->toolButton_9->setIcon(QPixmap(":/images/pause.png"));
+        DecodeWork.SetSate(1);
+
+
+    }
+    else if(DecodeWork.GetSate() == 1)
+    {
+//        ui->toolButton_9->setToolTip("播放");
+//        ui->toolButton_9->setIcon(QPixmap(":/images/play.png"));
+        DecodeWork.SetSate(2);
+    }
+    }
+
+    if(type == AUDIO){
+    if (DecodeWorkAudio.GetSate() == 2){
+
+
+        ui->toolButton_9->setToolTip("倒放暂停");
+        ui->toolButton_9->setIcon(QPixmap(":/images/pause.png"));
+        DecodeWorkAudio.SetSate(1);
+        qDebug()<<"开始古可11111";
+
+    }
+    else if(DecodeWorkAudio.GetSate() == 1)
+    {
+        ui->toolButton_9->setToolTip("倒放播放");
+        ui->toolButton_9->setIcon(QPixmap(":/images/play.png"));
+        DecodeWorkAudio.SetSate(2);
+        qDebug()<<"开始古可11111";
     }
     }
 }
@@ -2049,17 +2318,32 @@ void MainWindow::on_listWidget_currentTextChanged(const QString &currentText)
 
 void MainWindow::threadFinished(){
     qDebug()<<"finished";
-    if ((this->type == VIDEO) && (DecodeWork.GetSate() == 0 || DecodeWorkAudio.GetSate() == 0)){
+    if ((this->type == VIDEO) && (ui->widget_2->type == 1) && (DecodeWork.GetSate() == 0 || DecodeWorkAudio.GetSate() == 0)){
         qDebug()<<"case1";
         return;
     }
-    if(this->type == AUDIO && (DecodeWorkAudio.GetSate() == 0))
+    if ((this->type == VIDEO) && (ui->widget_2->type == 0) && (DecodeWorkAudio.GetSate() == 0)){
+        qDebug()<<"case8";
+        DecodeWork.StopPlay();
         return;
-    if((this->type == VIDEO) && (DecodeWork.finished == false || DecodeWorkAudio.finished == false)){
-                qDebug()<<"case2";
+    }
+
+    if(this->type == AUDIO && (DecodeWorkAudio.GetSate() == 0)){
+        qDebug()<<"vase23";
+        return;
+    }
+    if((this->type == VIDEO) && (ui->widget_2->type == 1) && (DecodeWork.finished == false || DecodeWorkAudio.finished == false)){
+        qDebug()<<"case2";
         return;
 
     }
+
+    if((this->type == VIDEO) && (ui->widget_2->type == 0) && (DecodeWorkAudio.finished == false)){
+        qDebug()<<"case7";
+        return;
+
+    }
+
 
     if((this->type == AUDIO) && DecodeWorkAudio.finished == false){
                 qDebug()<<"case4";
@@ -2075,10 +2359,10 @@ void MainWindow::threadFinished(){
 
 
     if(this->type == VIDEO){
+//        if(ui->widget_2->type == 1){
     DecodeWork.SetSate(0);
     DecodeWorkAudio.SetSate(0);
-    DecodeWork.finished = false;
-    DecodeWorkAudio.finished = false;
+
 
 
 
@@ -2086,41 +2370,48 @@ void MainWindow::threadFinished(){
 //    DecodeWork.wait();
 //    DecodeWorkAudio.quit();
 //    DecodeWorkAudio.wait();
-    qDebug()<<"restart";
+    DecodeWork.finished = false;
+    DecodeWorkAudio.finished = false;
+    qDebug()<<"restart video";
     ui->toolButton_9->setToolTip("暂停");
     ui->toolButton_9->setIcon(QPixmap(":/images/pause.png"));
-    DecodeWork.SetSate(1);
-    DecodeWorkAudio.SetSate(1);
 
-    DecodeWork.LoadVideoFile(this->file_reverse);
-    DecodeWorkAudio.LoadVideoFile(this->file_reverse);
+
+//    DecodeWork.LoadVideoFile(this->file_reverse);
+//    DecodeWorkAudio.LoadVideoFile(this->file_reverse);
+    qDebug()<<"还好把";
     reverse_duration=DecodeWork.GetDuration(); //获取总时间
     ui->horizontalSlider_2->setMaximum(reverse_duration);  //设置最大值
     ui->horizontalSlider_2->setMinimum(0); //设置最小值
     ui->horizontalSlider_2->setValue(reverse_duration);
-    DecodeWork.SetSeekPos(ui->horizontalSlider_2->maximum());
-    DecodeWorkAudio.SetSeekPos(ui->horizontalSlider_2->maximum());
+    DecodeWork.SetSeekPos(ui->horizontalSlider_2->maximum()-100);
+    DecodeWorkAudio.setVideoTime(ui->horizontalSlider_2->maximum()-100);
+    DecodeWorkAudio.SetSeekPos(ui->horizontalSlider_2->maximum()-100);
     DecodeWork.video_pack.clear();
     DecodeWork.over_pack.clear();
     DecodeWorkAudio.audio_pack.clear();
     DecodeWorkAudio.over_pack.clear();
+    DecodeWork.SetSate(1);
+    DecodeWorkAudio.SetSate(1);
     DecodeWork.start();
     DecodeWorkAudio.start();
+//        }
     }
 
     if(this->type == AUDIO){
 //    DecodeWork.SetSate(0);
     DecodeWorkAudio.SetSate(0);
 //    DecodeWork.finished = false;
-    DecodeWorkAudio.finished = false;
+
 
 
 
 //    DecodeWork.quit();
 //    DecodeWork.wait();
-//    DecodeWorkAudio.quit();
-//    DecodeWorkAudio.wait();
-    qDebug()<<"restart";
+    DecodeWorkAudio.quit();
+    DecodeWorkAudio.wait();
+    DecodeWorkAudio.finished = false;
+    qDebug()<<"restart audio";
     ui->toolButton_9->setToolTip("暂停");
     ui->toolButton_9->setIcon(QPixmap(":/images/pause.png"));
 //    DecodeWork.SetSate(1);
@@ -2133,7 +2424,7 @@ void MainWindow::threadFinished(){
     ui->horizontalSlider_2->setMinimum(0); //设置最小值
     ui->horizontalSlider_2->setValue(reverse_duration);
 //    DecodeWork.SetSeekPos(ui->horizontalSlider_2->maximum());
-    DecodeWorkAudio.SetSeekPos(ui->horizontalSlider_2->maximum());
+    DecodeWorkAudio.SetSeekPos(ui->horizontalSlider_2->maximum()-100);
 //    DecodeWork.video_pack.clear();
 //    DecodeWork.over_pack.clear();
     DecodeWorkAudio.audio_pack.clear();
@@ -2152,9 +2443,41 @@ void MainWindow::on_horizontalSlider_2_sliderMoved(int position)
 
 
 
-//    ui->horizontalSlider_2->setValue(position);
+////    ui->horizontalSlider_2->setValue(position);
 
-//    DecodeWork.SetSeekPos(position);
+////    DecodeWork.SetSeekPos(position);
+////    qint64 position = mouse_x*ui->horizontalSlider_2->maximum()/ui->horizontalSlider_2->width();
+//    if(position != ui->horizontalSlider_2->value()){
+//        if(this->type == VIDEO){
+//            if(DecodeWork.GetSate() != 2){
+//                QMessageBox::warning(this, tr("Error"),
+//                                               tr("请先暂停再调节")
+//                                               );
+//            }
+//            else{
+////                    DecodeWork.PausePlay();
+////                    DecodeWorkAudio.PausePlay();
+//                ui->horizontalSlider_2->setValue(position);
+//                DecodeWork.SetSeekPos(position);
+//                DecodeWorkAudio.SetSeekPos(position);
+
+//            }
+//        }
+//        if(this->type == AUDIO){
+//            if(DecodeWork.GetSate() != 2){
+//                QMessageBox::warning(this, tr("Error"),
+//                                               tr("请先暂停再调节")
+//                                               );
+//            }
+//            else{
+//                qDebug()<<"改变pos";
+//                ui->horizontalSlider_2->setValue(position);
+////                    DecodeWorkAudio.PausePlay();
+//                DecodeWorkAudio.SetSeekPos(position);
+
+//            }
+//        }
+//    }
 }
 
 
@@ -2439,6 +2762,9 @@ void MainWindow::setPreviewFrame(QImage image){
     qDebug()<<"发了";
     qDebug()<<image.size();
     if(this->isFullScreen == true && ui->toolButton->isVisible() == false)return;
+//    image = image.scaled(ui->label_4->size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+
+    ui->label_4->setScaledContents(true);
     ui->label_4->setPixmap(QPixmap::fromImage(image));
     ui->label_4->setVisible(true);
     m_pTimer->stop();
@@ -2614,14 +2940,38 @@ void MainWindow::testWav(){
 }
 
 void MainWindow::doBeforeChangeMedia(QString nextFilename){
+
+//    audio_time = 0;
+//    video_time = 0;
+    qDebug()<<"ori的类型"<<ori_judgetype(nextFilename);
+//    audio_wave.stop();
+
+    dontshow = false;
+    dontpreview = false;
+    zero_tolerence = 0;
+
+    if(previewFrame.before_start(nextFilename) == -1){
+        dontpreview = true;
+    }
+    else{
+        previewFrame.filename = nextFilename;
+    }
+
     if(judgetype(nextFilename) == AUDIO_TYPE){
+
         this->type = AUDIO;
         ui->widget_2->type = 0;
-//        qDebug()<<"是audio";
+        qDebug()<<"是audio";
         audio_wave.stop();
         ui->widget->setVisible(false);
         ui->widget_3->setVisible(true);
-        audio_wave.init(nextFilename);
+        int r = audio_wave.init(nextFilename);
+        if(r==-1){
+            ui->widget_3->removeGraph(0);
+            ui->widget_3->setVisible(false);
+            dontshow = true;
+            return;
+        }
         old_position = 0;
         qDebug()<<"init完成";
         qDebug()<<"old_pos"<<old_position;
@@ -2647,9 +2997,16 @@ void MainWindow::doBeforeChangeMedia(QString nextFilename){
     }
     else{
         if(judgetype(nextFilename) == VIDEO_TYPE){
+
             this->type = VIDEO;
-            ui->widget_2->type = 1;
-//            qDebug()<<"是video";
+            if(ori_judgetype(nextFilename) == AUDIO_TYPE){
+                ui->widget_2->type = 0;
+                emit callVideoStop();
+            }
+            else{
+                ui->widget_2->type = 1;
+            }
+            qDebug()<<"是video";
             ui->widget->setVisible(true);
             ui->widget_3->setVisible(false);
             m_dataQueue.clear();
@@ -2661,46 +3018,72 @@ void MainWindow::doBeforeChangeMedia(QString nextFilename){
 
 void MainWindow::on_toolButton_10_clicked()
 {
+//    QDesktopWidget* desktopWidget = QApplication::desktop();
+//    QRect deskRect = desktopWidget->availableGeometry();
+//    double availableScreenX = deskRect.width();
+//    double availableScreenY = deskRect.height();
+
     if(ui->toolButton_10->text() == "全屏"){
 
 //     ui->toolButton_10->raise();
     ui->centralWidget->setWindowFlags (Qt::Window);
     ui->centralWidget->showFullScreen();
+    ui->widget->move(10,0);
     ui->widget->resize(ui->centralWidget->width()-20,ui->centralWidget->height()-20);
 
-    ui->widget_2->move(15,0);
-    ui->widget_2->resize(ui->centralWidget->width()-30,ui->centralWidget->height()-30);
-    ui->widget_3->resize(ui->centralWidget->width()-30,ui->centralWidget->height()-30);
+    ui->widget_2->move(10,0);
+    ui->widget_2->resize(ui->centralWidget->width()-20,ui->centralWidget->height()-20);
+    ui->widget_3->move(10,0);
+    ui->widget_3->resize(ui->centralWidget->width()-20,ui->centralWidget->height()-20);
     ui->listWidget->setVisible(false);
     ui->textBrowser->setVisible(false);
-    ui->toolButton->move(ori_toolbutton_x,ui->widget->y()+ui->widget->height()-ui->toolButton->height()+10);
-    ui->toolButton_5->move(ori_toolbutton_5_x,ui->widget->y()+ui->widget->height()-ui->toolButton_5->height()+10);
-    ui->toolButton_6->move(ori_toolbutton_6_x,ui->widget->y()+ui->widget->height()-ui->toolButton_6->height()+10);
-    ui->horizontalSlider->move(ori_horizontalSlider_x, ui->widget->y()+ui->widget->height()-ui->horizontalSlider->height()+10);
+    ui->toolButton->move(ori_toolbutton_x,ui->widget->height()-ui->toolButton->height()+10);
+    ui->toolButton->raise();
+    ui->toolButton_5->move(ori_toolbutton_5_x,ui->widget->height()-ui->toolButton_5->height()+10);
+    ui->toolButton_5->raise();
+    ui->toolButton_6->move(ori_toolbutton_6_x,ui->widget->height()-ui->toolButton_6->height()+10);
+    ui->toolButton_6->raise();
+    ui->horizontalSlider->move(ori_horizontalSlider_x, ui->widget->height()-ui->horizontalSlider->height()+10);
     ui->horizontalSlider->resize(ori_horizontalSlider_width+100,ui->horizontalSlider->height());
+    ui->horizontalSlider->raise();
     ui->toolButton_2->move(ori_toolbutton_2_x + 100,ui->widget->height() - ui->toolButton_2->height()+10);
+    ui->toolButton_2->raise();
     ui->toolButton_3->move(ori_toolbutton_3_x + 100,ui->widget->height() - ui->toolButton_3->height()+10);
+    ui->toolButton_3->raise();
     ui->toolButton_4->move(ori_toolbutton_4_x + 100,ui->widget->height() - ui->toolButton_4->height()+10);
+    ui->toolButton_4->raise();
     ui->comboBox->move(ori_combox_x+100,ui->widget->height()-ui->comboBox->height()+10);
+    ui->comboBox->raise();
     ui->toolButton_7->move(ori_toolbutton_7_x + 100,ui->widget->height() - ui->toolButton_7->height()+10);
+    ui->toolButton_7->raise();
     ui->toolButton_8->move(ori_toolbutton_8_x + 100,ui->widget->height() - ui->toolButton_8->height()+10);
-
+    ui->toolButton_8->raise();
     ui->toolButton_10->move(ori_toolbutton_10_x + 100,ui->widget->height() - ui->toolButton_10->height()+10);
-
-    ui->label->move(ori_label_x + 100,ui->widget->height() - ui->label->height()+10);
-    ui->label_2->move(ori_label_2_x + 100,ui->widget->height() - ui->label_2->height()+10);
-    ui->label_3->move(ori_label_3_x + 100,ui->widget->height() - ui->label_3->height()+10);
-//    ui->label_4->move(ui->label_4->x(),ui->widget->height() - ui->label_4->height()+10);
-    ui->verticalSlider->move(ori_verticalSlider_x+220,ui->widget->height() - ui->verticalSlider->height() - ui->toolButton_8->height()+10);
-
-    ui->toolButton_9->move(ori_toolbutton_9_x,ui->widget_2->height() - ui->toolButton_9->height() + 20);
-    ui->horizontalSlider_2->move(ori_horizontalSlider_2_x, ui->widget_2->y()+ui->widget_2->height()-ui->horizontalSlider_2->height()+20);
+    ui->toolButton_10->raise();
+    ui->label->move(ori_label_x + 100,ui->widget->height() - ui->horizontalSlider->height() + 4);
+    ui->label->raise();
+    ui->label_2->move(ori_label_2_x + 100,ui->widget->height() -  ui->horizontalSlider->height() + 4);
+    ui->label_2->raise();
+    ui->label_3->move(ori_label_3_x + 100,ui->widget->height() -  ui->horizontalSlider->height() + 4);
+    ui->label_3->raise();
+    ui->label_4->move(ori_label_4_x,ui->widget->height() - ui->horizontalSlider->height() - ui->label_4->height() + 4);
+//    ui
+    ui->label_4->setVisible(false);
+    ui->label_4->raise();
+    ui->verticalSlider->move(QApplication::desktop()->availableGeometry().width()-ori_verticalSlider_width-0.5,ui->widget->height() - ui->verticalSlider->height() - ui->toolButton_8->height()+10);
+    ui->verticalSlider->raise();
+    ui->toolButton_9->move(ori_toolbutton_9_x,ui->widget_2->height() - ui->toolButton_9->height() + 10);
+    ui->toolButton_9->raise();
+    ui->horizontalSlider_2->move(ori_horizontalSlider_2_x, ui->widget_2->y()+ui->widget_2->height()-ui->horizontalSlider_2->height()+10);
     ui->horizontalSlider_2->resize(ori_horizontalSlider_2_width+100,ui->horizontalSlider_2->height());
+    ui->horizontalSlider_2->raise();
     ui->toolButton_10->setText("取消全屏");
     ui->label_5->move(ori_label_5_x + 100,ui->widget->height() - ui->label_5->height()+10);
+    ui->label_5->raise();
     ui->label_6->move(ori_label_6_x + 100,ui->widget->height() - ui->label_6->height()+10);
+    ui->label_6->raise();
     ui->label_7->move(ori_label_7_x + 100,ui->widget->height() - ui->label_7->height()+10);
-
+    ui->label_7->raise();
 
     this->isFullScreen = true;
 
@@ -2741,7 +3124,10 @@ void MainWindow::on_toolButton_10_clicked()
         ui->label_2->resize(ori_label_2_width,ori_label_2_height);
         ui->label_3->move(ori_label_3_x,ori_label_3_y);
         ui->label_3->resize(ori_label_3_width,ori_label_3_height);
+//        ui->label_4->move(ori_label_4_x,ori_label_4_y);
+        ui->label_4->setVisible(false);
         ui->toolButton_5->move(ori_toolbutton_5_x,ori_toolbutton_5_y);
+
         ui->toolButton_5->resize(ori_toolbutton_5_width,ori_toolbutton_5_height);
         ui->toolButton_6->move(ori_toolbutton_6_x,ori_toolbutton_6_y);
         ui->toolButton_6->resize(ori_toolbutton_6_width,ori_toolbutton_6_height);
@@ -2801,21 +3187,26 @@ void MainWindow::on_toolButton_10_clicked()
 //}
 
 void MainWindow::on_timer_timeout(){
+    ui->label_4->setPixmap(QPixmap());
 //    qDebug()<<"mouse_x"<<mouse_x;
 //    qDebug()<<"mouse_y"<<mouse_y;
+    if(dontpreview == false){
     qint64 position = preframe_mouse_x*ui->horizontalSlider->maximum()/ui->horizontalSlider->width();
     qDebug()<<"pos"<<transfer_to_std_time(position);
+//    qDebug()<<"又来了";
     this->pause_time = position;
     ui->label_4->move(preframe_mouse_x+ui->horizontalSlider->x(),ui->horizontalSlider->y()-ui->label_4->height());
 //    ui->label_4->setPixmap(QPixmap("D:\\images\\72.jpg"));
     previewFrame.time = position / 1000;
 //        previewFrame.time = 60;
-    previewFrame.filename = this->playList[this->current_index];
+//    previewFrame.filename = this->playList[this->current_index];
 //            while(continue_ == false && previewFrame.m_run !=0){
 //                qDebug()<<"出不去";
 //            }
+
     previewFrame.start();
     ui->label_4->setScaledContents(true);
+    }
 
 }
 
@@ -2831,6 +3222,7 @@ void MainWindow::on_timer_timeout_fullscreen(){
         ui->label_3->setVisible(false);
         ui->toolButton_5->setVisible(false);
         ui->toolButton_6->setVisible(false);
+        ui->label_4->setVisible(false);
     }
     if(this->isReverse){
         ui->toolButton_9->setVisible(false);
@@ -2841,7 +3233,7 @@ void MainWindow::on_timer_timeout_fullscreen(){
     }
 
 //    ui->toolButton_10->setVisible(false);
-    ui->label_4->setVisible(false);
+
     ui->toolButton_2->setVisible(false);
     ui->toolButton_3->setVisible(false);
     ui->toolButton_4->setVisible(false);
@@ -2863,6 +3255,7 @@ void MainWindow::on_timer_timeout_fullscreen(){
             ui->label_3->setVisible(true);
             ui->toolButton_5->setVisible(true);
             ui->toolButton_6->setVisible(true);
+            ui->label_4->setVisible(true);
 
         }
         if(this->isReverse){
@@ -2872,7 +3265,7 @@ void MainWindow::on_timer_timeout_fullscreen(){
             ui->label_6->setVisible(true);
             ui->label_7->setVisible(true);
         }
-        ui->label_4->setVisible(true);
+
         ui->toolButton_2->setVisible(true);
         ui->toolButton_3->setVisible(true);
         ui->toolButton_4->setVisible(true);
@@ -2904,4 +3297,90 @@ void MainWindow::sleepforms(){
 
 void MainWindow::threadFinished2(){
     qDebug()<<"Yinpinle";
+}
+
+void MainWindow::on_listWidget_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous)
+{
+    ;
+}
+
+void MainWindow::on_listWidget_currentRowChanged(int currentRow)
+{
+    ;
+}
+
+void MainWindow::on_listWidget_itemClicked(QListWidgetItem *item)
+{
+    ;
+}
+
+void MainWindow::on_listWidget_clicked(const QModelIndex &index)
+{
+    ;
+}
+
+
+void MainWindow::no_video_handle(){
+    ui->widget_2->type = 0;
+}
+
+
+void MainWindow::videosleep(qint64 time){
+    qDebug()<<"video休眠"<<time;
+    DecodeWork.sleeptime = time;
+}
+
+void MainWindow::audiosleep(qint64 time){
+//    if(type == AUDIO && ui->widget_2->type == 0){
+//        return;
+//    }
+//    else{
+
+//        qDebug()<<"audio休眠"<<time;
+//        DecodeWorkAudio.sleeptime = time;
+//    }
+}
+
+
+void MainWindow::set_audio_s_video_time(qint64 video_time)
+{
+    qDebug()<<"设置video_time,norem"<<video_time;
+    DecodeWorkAudio.setVideoTime(video_time);
+}
+
+void MainWindow::resizeEvent( QResizeEvent* e)
+{
+         QSize oldSize,size;
+         oldSize = e->oldSize(); //获取开始的size
+         size = e->size();       //获取现在的size
+
+         //获取长宽变化的比率
+         qreal ratioW,ratioH;
+         ratioW = size.width()/oldSize.width();
+         ratioH = size.height()/oldSize.height();
+
+         //窗体中的控件按比例缩放
+//         ui->toolButton->resize(QSize(ui->toolButton->size().width()*ratioW,
+
+//                                     ui->toolButton->size().height()*ratioH));
+//         ui->toolButton->raise();
+//         //如果你有很多控件，请继续缩放下去……
+//         ..............
+}
+
+
+void MainWindow::setCallBack(){
+    qDebug()<<"怎么办呀";
+    previewFrame.callback1 = true;
+    m_pTimer_preframe->stop();
+}
+
+void MainWindow::start_timer(){
+//    qDebug()<<"开始设置";
+//    m_pTimer_preframe->stop();
+//    m_pTimer_preframe->start(100);
+}
+
+void MainWindow::stoptimer(){
+//    m_pTimer_preframe->stop();
 }

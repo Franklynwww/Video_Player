@@ -7,7 +7,7 @@ bool isValidVideoFile(QString filename){
         type += filename[i];
     }
     if (type == "avi" || type == "wmv" || type == "mpg" || type == "mpeg" || type == "mov" || type == "rm"
-            || type == "ram" || type == "swf" || type == "flv" || type == "mp4" || type == "mp3" || type == "wma"
+            || type == "ram"  || type == "flv" || type == "mp4" || type == "mp3" || type == "wma"
             || type == "rmvb" || type == "mkv" || type == "wav"){
         return true;
     }
@@ -255,4 +255,15 @@ void pngTomp4_2()         //png图集转mp4
 //    avformat_free_context(kAVFormatContext);   /*释放上下文*/
 }
 
-
+bool isMOV(QString filename){
+    filename = filename.toLower();
+    int lastindex = filename.lastIndexOf(".");
+    QString type = "";
+    for (int i = lastindex+1;i<filename.length();i++){
+        type += filename[i];
+    }
+    if (type == "mov"){
+        return true;
+    }
+    return false;
+}

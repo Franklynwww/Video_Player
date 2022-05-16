@@ -45,15 +45,17 @@ private:
     AVCodecContext * decoder = nullptr;
     int bytes_per_sample;
     AVPacket * packet;
-    AVFrame * frame;
+    AVFrame * frame = nullptr;
     qint64 max = -1;
     qint64 min = 1E10;
+    int audio_stream_index = -1;
+
 //    struct SwrContext *convert_ctx = nullptr;
 
 
 
 public:
-    void init(QString filename);
+   int init(QString filename);
     double get_wave_value(int position);
     void stop();
 };

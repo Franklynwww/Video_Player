@@ -32,9 +32,13 @@ public:
     ~MainWindow();
 
 private:
+    double availableScreenX;
+    double availableScreenY;
     int type;
     QQueue<float> m_dataQueue;
     int m_bufferSize = 50;
+    int dontshow = false;
+    int dontpreview = false;
     int max;
     int min;
     float m_magnification;
@@ -50,7 +54,9 @@ private:
     QMediaPlayer* mediaplayer2;
     WAVFILEHEADER WavFileHeader;
     QTimer*  m_pTimer;
+    QTimer*  m_pTimer_preframe;
     QTimer*  m_pTimer_fullscreen;
+    int zero_tolerence = 0;
 
     bool continue_;
     bool isFullScreen;
@@ -198,6 +204,11 @@ private:
     int ori_label_3_width;
     int ori_label_3_height;
 
+    int ori_label_4_x;
+    int ori_label_4_y;
+    int ori_label_4_width;
+    int ori_label_4_height;
+
 
     int ori_label_5_x;
     int ori_label_5_y;
@@ -229,6 +240,8 @@ private:
 signals:
     void playListChanged();
     void unlock_signal();
+    void callVideoStop();
+
 
 
 private slots:
@@ -301,12 +314,30 @@ private slots:
     void on_timer_timeout_fullscreen();
 
 
-
     void on_toolButton_10_clicked();
 
     void sleepforms();
 
     void threadFinished2();
+    void on_listWidget_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous);
+    void on_listWidget_currentRowChanged(int currentRow);
+    void on_listWidget_itemClicked(QListWidgetItem *item);
+    void on_listWidget_clicked(const QModelIndex &index);
+
+    void no_video_handle();
+
+    void videosleep(qint64);
+    void audiosleep(qint64);
+
+    void set_audio_s_video_time(qint64);
+
+    void resizeEvent( QResizeEvent* e) override;
+
+    void setCallBack();
+
+    void start_timer();
+
+    void stoptimer();
 };
 
 #endif // MAINWINDOW_H

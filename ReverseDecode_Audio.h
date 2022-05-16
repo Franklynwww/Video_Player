@@ -85,6 +85,18 @@ public:
 //    QList <struct IMAGE_FRAME> over_pack; //上次解码没有用完的包
     QList<struct AUDIO_FRAME> over_pack;
 
+    int audio_tolerence;
+
+    bool want_to_finished;
+
+    qint64 sleeptime;
+
+    qint64 video_time = -1;
+
+    QMutex mutex;
+
+    void setVideoTime(qint64);
+
 
 
 
@@ -107,7 +119,7 @@ private:
 //    QList <struct IMAGE_FRAME> video_pack;
 
     AVFormatContext *format_ctx = nullptr;
-    int video_stream_index = -1;
+//    int video_stream_index = -1;
     AVFrame *RGB24_pFrame = nullptr;
     AVFrame *SRC_Audio_pFrame = nullptr;
     uint8_t *out_buffer_rgb = nullptr;
@@ -125,6 +137,7 @@ private:
      int out_sample_rate;
      int out_channels;
      uint8_t *out_buffer_audio = nullptr;
+     uint64_t in_channel_layout;
 
 
 

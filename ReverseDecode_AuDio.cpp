@@ -35,6 +35,9 @@ void ReverseDecode_Audio::FreeRAM()
     img_convert_ctx = nullptr;
     out_buffer_rgb = nullptr;
     out_buffer_audio = nullptr;
+
+
+    audio_stream_index = -1;
 }
 
 
@@ -55,7 +58,7 @@ int ReverseDecode_Audio::LoadVideoFile(QString media)
 
     //得到后缀
     file_suffix=info.suffix();
-    qDebug()<<"file_suffix:"<<file_suffix;
+    qDebug()<<"file_suffix2222:"<<file_suffix;
 
     //分配上下文
     format_ctx = avformat_alloc_context();
@@ -72,38 +75,39 @@ int ReverseDecode_Audio::LoadVideoFile(QString media)
         return -1;
     }
 
-    LogSend(tr("视频中流的数量: %1\n").arg(format_ctx->nb_streams));
+    LogSend(tr("视频中流流的的数量: %1\n").arg(format_ctx->nb_streams));
+//    for (int i = 0; i < format_ctx->nb_streams; ++i)
+//    {
+//        const AVStream* stream = format_ctx->streams[i];
+//        if (stream->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
+//        {
+//            //查找解码器
+//            AVCodec *video_pCodec = avcodec_find_decoder(stream->codecpar->codec_id);
+//            //打开解码器
+//            if (avcodec_open2(stream->codec, video_pCodec, nullptr) != 0)
+//            {
+//                LogSend(tr("解码器打开失败.\n"));
+//                return -1;
+//            }
+//            video_stream_index = i;
+//            //得到视频帧的宽高
+//            video_width = stream->codecpar->width;
+//            video_height = stream->codecpar->height;
+
+//            LogSend(tr("视频帧的尺寸(以像素为单位): (宽X高)%1x%2 像素格式: %3\n").arg(
+//                stream->codecpar->width).arg(stream->codecpar->height).arg(stream->codecpar->format));
+//        }
+//    }
+
+//    if (video_stream_index == -1)
+//    {
+//        LogSend("没有检测到视频流.\n");
+//        return -1;
+//    }
+
     for (int i = 0; i < format_ctx->nb_streams; ++i)
     {
-        const AVStream* stream = format_ctx->streams[i];
-        if (stream->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
-        {
-            //查找解码器
-            AVCodec *video_pCodec = avcodec_find_decoder(stream->codecpar->codec_id);
-            //打开解码器
-            if (avcodec_open2(stream->codec, video_pCodec, nullptr) != 0)
-            {
-                LogSend(tr("解码器打开失败.\n"));
-                return -1;
-            }
-            video_stream_index = i;
-            //得到视频帧的宽高
-            video_width = stream->codecpar->width;
-            video_height = stream->codecpar->height;
-
-            LogSend(tr("视频帧的尺寸(以像素为单位): (宽X高)%1x%2 像素格式: %3\n").arg(
-                stream->codecpar->width).arg(stream->codecpar->height).arg(stream->codecpar->format));
-        }
-    }
-
-    if (video_stream_index == -1)
-    {
-        LogSend("没有检测到视频流.\n");
-        return -1;
-    }
-
-    for (int i = 0; i < format_ctx->nb_streams; ++i)
-    {
+        qDebug()<<"test point 1";
         const AVStream* stream = format_ctx->streams[i];
         if (stream->codec->codec_type == AVMEDIA_TYPE_AUDIO)
         {
@@ -116,16 +120,32 @@ int ReverseDecode_Audio::LoadVideoFile(QString media)
                 return -1;
             }
             audio_stream_index = i;
-//            sampleRate = stream->codecpar->sample_rate;
+
+            int sampleRate = stream->codecpar->sample_rate;
+            qDebug()<<"sample rarrrrate"<<sampleRate;
 //            channels = stream->codecpar->channels;
 //            stream->codec->channel_layout = av_get_default_channel_layout(stream->codec->channels);
 
 
-            out_channel_layout = stream->codecpar->channel_layout;
+            if(stream->codecpar->channel_layout == 0 && stream->codecpar->channels == 1){
+                out_channel_layout = AV_CH_LAYOUT_STEREO;
+            }
+            else{
+            if(stream->codecpar->channel_layout == 0 && stream->codecpar->channels == 2){
+                out_channel_layout = AV_CH_LAYOUT_STEREO;
+            }
+            else{
+                out_channel_layout = stream->codecpar->channel_layout;
+            }
+            }
+
             out_sample_fmt = AV_SAMPLE_FMT_S16;
             out_sample_rate = stream->codecpar->sample_rate;
             out_channels = av_get_channel_layout_nb_channels(out_channel_layout);
 
+           qDebug()<<"out_channel_layout"<<out_channel_layout;
+           qDebug()<<"out_sample_fmt"<<out_sample_fmt;
+           qDebug()<<"out_sample_rate"<<out_sample_rate;
 
 
 
@@ -138,33 +158,34 @@ int ReverseDecode_Audio::LoadVideoFile(QString media)
 
     }
 
+    qDebug()<<"audio_stream_index"<<audio_stream_index;
     if (audio_stream_index == -1)
     {
         LogSend("没有检测到音频流.\n");
         return -1;
     }
 
-    AVRational frameRate = format_ctx->streams[video_stream_index]->avg_frame_rate;
+//    AVRational frameRate = format_ctx->streams[video_stream_index]->avg_frame_rate;
 
 
-    /*设置视频转码器*/
+//    /*设置视频转码器*/
     SRC_Audio_pFrame = av_frame_alloc();
-    RGB24_pFrame = av_frame_alloc();// 存放解码后YUV数据的缓冲区
+//    RGB24_pFrame = av_frame_alloc();// 存放解码后YUV数据的缓冲区
 
-    //将解码后的YUV数据转换成RGB24
-    img_convert_ctx = sws_getContext(video_width, video_height,
-        format_ctx->streams[video_stream_index]->codec->pix_fmt, video_width, video_height,
-        AV_PIX_FMT_RGB24, SWS_BICUBIC, nullptr, nullptr, nullptr);
+//    //将解码后的YUV数据转换成RGB24
+//    img_convert_ctx = sws_getContext(video_width, video_height,
+//        format_ctx->streams[video_stream_index]->codec->pix_fmt, video_width, video_height,
+//        AV_PIX_FMT_RGB24, SWS_BICUBIC, nullptr, nullptr, nullptr);
 
-    //计算RGB图像所占字节大小
-    int numBytes = avpicture_get_size(AV_PIX_FMT_RGB24, video_width, video_height);
+//    //计算RGB图像所占字节大小
+//    int numBytes = avpicture_get_size(AV_PIX_FMT_RGB24, video_width, video_height);
 
-    //申请空间存放RGB图像数据
-    out_buffer_rgb = (uint8_t *)av_malloc(numBytes * sizeof(uint8_t));
+//    //申请空间存放RGB图像数据
+//    out_buffer_rgb = (uint8_t *)av_malloc(numBytes * sizeof(uint8_t));
 
-    // avpicture_fill函数将ptr指向的数据填充到picture内,但并没有拷贝,只是将picture结构内的data指针指向了ptr的数据
-    avpicture_fill((AVPicture *)RGB24_pFrame, out_buffer_rgb, AV_PIX_FMT_RGB24,
-        video_width, video_height);
+//    // avpicture_fill函数将ptr指向的数据填充到picture内,但并没有拷贝,只是将picture结构内的data指针指向了ptr的数据
+//    avpicture_fill((AVPicture *)RGB24_pFrame, out_buffer_rgb, AV_PIX_FMT_RGB24,
+//        video_width, video_height);
 
     //申请空间存放重采样后的音频数据
     out_buffer_audio = (uint8_t *)av_malloc(MAX_AUDIO_FRAME_SIZE*2);
@@ -201,8 +222,12 @@ void ReverseDecode_Audio::SetSeekPos(qint64 pos)
     m_oldPosMs = format_ctx->duration;
     is_CurrentSeekPos = 1;
     m_seek=m_n64CurrentSeekPos = pos / 1000.0;  //变成秒单位
+    qDebug()<<"该变了pos"<<m_seek;
+
+//    audio_pack.clear();
     over_pack.clear();
-    qDebug() << "**************倒放解码:SetSeekPos**************:" << pos << "," << m_seek;
+
+    qDebug() << "**************倒放解码:SetSeekPosInAduio**************:" << pos << "," << m_seek;
 }
 
 
@@ -235,15 +260,19 @@ qint64 ReverseDecode_Audio::GetDuration()
 void ReverseDecode_Audio::run()
 {
     emit started2();
+    setVideoTime(-1);
     this->finished = false;
+    this->want_to_finished = false;
     audio_pack.clear();
     over_pack.clear();
+    this->sleeptime = 0;
 
+    this->audio_tolerence = 0;
 
     LogSend("开始播放视频.\n");
     StartPlayAudio();
     qDebug()<<"音频完全结束了";
-//    this->finished = false;
+    this->finished = true;
     emit isDone2();
 
 }
@@ -251,10 +280,10 @@ void ReverseDecode_Audio::run()
 //解码数据包
 int ReverseDecode_Audio::DecodDataPack2()
 {
-    if(audio_pack.size() == 0){
-        this->finished = true;
-        return 0;
-    }
+//    if(audio_pack.size() == 0){
+//        this->finished = true;
+//        return 0;
+//    }
 
     qDebug()<<"size of audio_pack"<<audio_pack.size();
     //判断上次是否还有没有播放完的包
@@ -265,6 +294,18 @@ int ReverseDecode_Audio::DecodDataPack2()
             audio_pack.append(over_pack.at(i));
         }
     }
+
+    if(audio_pack.size() == 0){
+        audio_tolerence++;
+        if(audio_tolerence>=200){
+        this->want_to_finished = true;
+        }
+        return 1;
+    }
+    else{
+        audio_tolerence = 0;
+    }
+
 
     if (audio_pack.size() >= 2)
     {
@@ -286,19 +327,47 @@ int ReverseDecode_Audio::DecodDataPack2()
     {
         int i = 0;
         int cnt_i=1;
-        if(file_suffix=="mpg")cnt_i=8;
+//        if(file_suffix=="mpg")cnt_i=8;
         for (i = audio_pack.size() - 1; i > cnt_i; i--)
         {
             //时间信号-秒转为毫秒
             qint64 pos_ms = audio_pack.at(i).audio_clock * 1000;
-
+            qDebug()<<"your_pos_ms"<<pos_ms;
+            qDebug()<<"your_video_ms"<<video_time;
             //因为是倒放.下一帧的时间肯定要比上一帧小,如果大于说明帧有问题不能显示
+
             if (pos_ms<m_oldPosMs)
             {
+                if(pos_ms>video_time+500&&video_time>=0){
+                    continue;
+                }
+                else{
+                if(pos_ms<=video_time+500&&pos_ms>video_time&&video_time>=0){
+                    QThread::msleep(m_DifferTime);
+                }
+                else{
+                if(pos_ms>video_time-500&&video_time>=0){
+                    QThread::msleep(m_DifferTime);
+                }
+                else{
+                if(pos_ms<video_time-500&&video_time>=0){
+                    QThread::msleep(m_DifferTime+video_time-pos_ms-500);
+                }
+                else{
+                    QThread::msleep(m_DifferTime);
+                }
+                }
+                }
+                }
+
 
                 qDebug()<<"audio_pos"<<audio_pack.at(i).audio_clock;
                 //通知界面更新
                 emit SendOneAudioFrame(audio_pack.at(i).audio,audio_pack.at(i).audio_clock);
+//                qDebug()<<"花完了";
+                if(audio_pack.at(i).audio_clock < 1){
+                    this->want_to_finished = true;
+                }
 //                qDebug()<<"pos_before_emit"<<pos_ms<<"m_run"<<m_run;
 //                if(audio_pack.at(i).audio_clock < 0.1){
 //                    qDebug()<<"为0了";
@@ -311,8 +380,55 @@ int ReverseDecode_Audio::DecodDataPack2()
 //                }
                 //同步画面,看起来差不多
                 //QThread::msleep(40);
-                QThread::msleep(m_DifferTime);
+//                msleep(0);
+//                if(m_DifferTime + sleeptime < 0){
+//                    QThread::msleep(0);
+//                }
+//                else{
+//                    QThread::msleep(m_DifferTime+sleeptime);
+//                }
+//                sleeptime = 0;
+//                mutex.lock();
+//                if(pos_ms<video_time+1500&&video_time>=0){
+//                    qint64 p = pos_ms;
+//                    qint64 v = video_time;
+//                    qDebug()<<"yourp"<<p;
+//                    qDebug()<<"yourv"<<v;
+//                    mutex.unlock();
 
+//                    if(v - p<=1.5*m_DifferTime && v - p>0){
+////                        qDebug()<<"yourp"<<p;
+////                        qDebug()<<"yourv"<<v;
+////                          qDebug()<<"your1"<< v - p;
+//                          QThread::msleep(m_DifferTime + v - p);
+//                    }
+//                    else{
+//                    if(v - pos_ms>=1.5*m_DifferTime){
+//                        qDebug()<<"your2"<<m_DifferTime*2;
+//                          QThread::msleep(m_DifferTime*(double((v - pos_ms))/double(m_DifferTime)-1));
+//                    }
+//                    else{
+//                        qDebug()<<"your3"<<m_DifferTime;
+//                          QThread::msleep(m_DifferTime);
+//                    }
+//                    }
+//                }
+//                else{
+//                    mutex.unlock();
+//                    QThread::msleep(m_DifferTime);
+//                }
+//                if(pos_ms<video_time&&video_time>=0){
+//                    qDebug()<<"audioxiuxi"<<m_DifferTime + video_time - pos_ms;
+//                    if(video_time - pos_ms<=1.5*m_DifferTime){
+//                  QThread::msleep(m_DifferTime + video_time - pos_ms);
+//                    }
+//                    else{
+//                        QThread::msleep(2.4*m_DifferTime);
+//                    }
+//                }
+//                else
+//                    QThread::msleep(m_DifferTime);
+//                  sleeptime = 0;
                 //int delay_time_cnt = 0;
                 //while (true)
                 //{
@@ -334,7 +450,7 @@ int ReverseDecode_Audio::DecodDataPack2()
         {
             over_pack.clear();
             //保存没有播放完的包
-            for (int j = 0; j <= i; j++)
+            for (int j = 0; j < i; j++)
             {
                 over_pack.append(audio_pack.at(j));
             }
@@ -371,6 +487,11 @@ int ReverseDecode_Audio::StartPlayAudio()
     //表示视频加载成功
     while (m_run)
     {
+        if(want_to_finished == true){
+            finished = true;
+            return 0;
+        }
+//        qDebug()<<"m_run"<<m_run;
         if (m_run == 2)
         {
             // qDebug()<<"暂停状态.";
@@ -405,6 +526,7 @@ int ReverseDecode_Audio::StartPlayAudio()
         //读取一帧数据
         if (av_read_frame(format_ctx, &pkt) < 0)
         {
+//            qDebug()<<"index"<<pkt.stream_index;
             //m_run = 2; //设置为暂停状态
             //解码数据包
             DecodDataPack2();
@@ -414,19 +536,23 @@ int ReverseDecode_Audio::StartPlayAudio()
             //向后偏移1秒
             m_n64CurrentSeekPos -= 1;
             //偏移到指定位置再开始解码    AVSEEK_FLAG_BACKWARD 向后找最近的关键帧
-
+            if(m_n64CurrentSeekPos <= -1){
+                this->want_to_finished = true;
+            }
             qint64 seek_val = m_n64CurrentSeekPos * AV_TIME_BASE;
             av_seek_frame(format_ctx, -1, seek_val, AVSEEK_FLAG_BACKWARD);
             seek_state = 1;
 
             //qDebug() << "完成一段解码.";
           //  QThread::sleep(5);
-            qDebug() << "数据读取完毕.";
+            qDebug() << "audio数据读取完毕.";
             continue;
         }
+//        qDebug()<<"index"<<pkt.stream_index;
 
-        if (pkt.stream_index == video_stream_index)
-        {
+
+//        if (pkt.stream_index == video_stream_index)
+//        {
 ////            qDebug()<<"在解码了";
 ////            qDebug()<<video_pack.size();
 
@@ -517,7 +643,7 @@ int ReverseDecode_Audio::StartPlayAudio()
 //                }
 
 //            }
-        }
+//        }
 
         if (pkt.stream_index == audio_stream_index)
         {
@@ -527,10 +653,10 @@ int ReverseDecode_Audio::StartPlayAudio()
             //当前时间
             audio_clock = av_q2d(format_ctx->streams[audio_stream_index]->time_base) * pkt.pts;
             qDebug()<<"audio_time"<<audio_clock;
-            if(audio_clock == 0){
-                this->finished = true;
-                qDebug()<<"yinpinbowanle";
-            }
+//            if(audio_clock < 0.1){
+//                this->finished = true;
+//                qDebug()<<"yinpinbowanle";
+//            }
 
             //说明之前偏移过
             if (seek_state)
@@ -538,6 +664,7 @@ int ReverseDecode_Audio::StartPlayAudio()
                 m_n64CurrentSeekPos = audio_clock;
                 seek_state = 0;
             }
+            qDebug()<<"audio_index"<<audio_stream_index;
 
             //解码音频 frame
             //发送音频帧
@@ -547,6 +674,7 @@ int ReverseDecode_Audio::StartPlayAudio()
                 qDebug()<<"不v恒功se";
                 continue;
             }
+
             //接受后对视频帧进行解码
             if (avcodec_receive_frame(format_ctx->streams[audio_stream_index]->codec, SRC_Audio_pFrame) != 0)
             {
@@ -555,11 +683,34 @@ int ReverseDecode_Audio::StartPlayAudio()
                 continue;
             }
 
-            SwrContext *swr_ctx = swr_alloc_set_opts(NULL, out_channel_layout, out_sample_fmt,out_sample_rate, format_ctx->streams[audio_stream_index]->codec->channel_layout, format_ctx->streams[audio_stream_index]->codec->sample_fmt, format_ctx->streams[audio_stream_index]->codec->sample_rate, 0, 0);
-            swr_init(swr_ctx);
+
+
+            if(format_ctx->streams[audio_stream_index]->codec->channel_layout == 0 && format_ctx->streams[audio_stream_index]->codec->channels == 1){
+                in_channel_layout = AV_CH_LAYOUT_MONO;
+            }
+            else{
+            if(format_ctx->streams[audio_stream_index]->codec->channel_layout == 0 && format_ctx->streams[audio_stream_index]->codec->channels == 2){
+                in_channel_layout = AV_CH_LAYOUT_STEREO;
+            }
+            else{
+                in_channel_layout = format_ctx->streams[audio_stream_index]->codec->channel_layout;
+            }
+            }
+
+            SwrContext *swr_ctx = swr_alloc_set_opts(NULL, out_channel_layout, out_sample_fmt,out_sample_rate, in_channel_layout, format_ctx->streams[audio_stream_index]->codec->sample_fmt, format_ctx->streams[audio_stream_index]->codec->sample_rate, 0, 0);
+            int a = swr_init(swr_ctx);
+            qDebug()<<"my_out_channel_layout"<<out_channel_layout;
+            qDebug()<<"my_out_sample_fmt"<<out_sample_fmt;
+            qDebug()<<"my_out_sample_rate"<<out_sample_rate;
+            qDebug()<<"my_format_ctx->streams[audio_stream_index]->codec->channel_layout"<<in_channel_layout;
+            qDebug()<<"my_format_ctx->streams[audio_stream_index]->codec->sample_fmt"<<format_ctx->streams[audio_stream_index]->codec->sample_fmt;
+            qDebug()<<"my_format_ctx->streams[audio_stream_index]->codec->sample_rate"<<format_ctx->streams[audio_stream_index]->codec->sample_rate;
+
+
 
             //转格式
             int len = swr_convert(swr_ctx, &out_buffer_audio, MAX_AUDIO_FRAME_SIZE*2, (const uint8_t **)SRC_Audio_pFrame->data, SRC_Audio_pFrame->nb_samples);
+            qDebug()<<"len=="<<len;
             if (len <= 0)
             {
                 qDebug()<<"转音频格式出错";
@@ -587,7 +738,7 @@ int ReverseDecode_Audio::StartPlayAudio()
             qDebug()<<"m_endSeekPos_audio"<<m_endSeekPos;
 
             //解码到结尾
-            if (audio_clock >= m_endSeekPos)
+            if (audio_clock >= m_endSeekPos + 1)
             {
                 //读取到最开头的一帧数据
                 if (audio_pack.size() == 1)
@@ -598,6 +749,7 @@ int ReverseDecode_Audio::StartPlayAudio()
                         //解码数据包
                         DecodDataPack2();
                         m_run = 2; //设置为暂停状态
+                        this->want_to_finished = true;
                         continue; //回到循环头继续
                     }
                 }
@@ -611,20 +763,23 @@ int ReverseDecode_Audio::StartPlayAudio()
                 //向后偏移10秒
                 m_n64CurrentSeekPos -= 5;
                 //偏移到指定位置再开始解码    AVSEEK_FLAG_BACKWARD 向后找最近的关键帧
-
+                if(m_n64CurrentSeekPos <= -5){
+                    this->want_to_finished = true;
+                }
                 qint64 seek_val = m_n64CurrentSeekPos * AV_TIME_BASE;
                 av_seek_frame(format_ctx, -1, seek_val, AVSEEK_FLAG_BACKWARD);
                 seek_state = 1;
 
                 qDebug() << "完成一段音频的解码.";
               //  QThread::sleep(5);
+                if(this->finished == true){
+                    qDebug()<<"该结束了";
+                    return 0;
+                }
 
                 }
             }
-        if(this->finished == true){
-            qDebug()<<"该结束了";
-            return 0;
-        }
+
         }
 
 
@@ -635,5 +790,13 @@ int ReverseDecode_Audio::StartPlayAudio()
 void ReverseDecode_Audio::no_video_handle(){
     qDebug()<<"收到了";
 //    this->no_video_signal  = true;
+
+}
+
+
+void ReverseDecode_Audio::setVideoTime(qint64 video_time){
+    mutex.lock();
+    this->video_time = video_time;
+    mutex.unlock();
 }
 

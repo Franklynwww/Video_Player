@@ -45,8 +45,8 @@
      <widget class="QCustomPlot" name="widget_3" native="true">
       <property name="geometry">
        <rect>
-        <x>10</x>
-        <y>-20</y>
+        <x>20</x>
+        <y>-10</y>
         <width>371</width>
         <height>191</height>
        </rect>

@@ -23,4 +23,5 @@ extern "C" {
 #define ERROR 2
 
 int judgetype(QString filename);
+int ori_judgetype(QString filename);
 #endif // JUDGE_TYPE_H

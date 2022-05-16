@@ -1,16 +1,17 @@
 #include "get_audio_wave.h"
 
-void Audio_WAVE::init(QString filename){
+int Audio_WAVE::init(QString filename){
        format = nullptr;
        std::string str = filename.toStdString();
        url = str.c_str();
 //       url = "D:/qtproject/Video_Player/video_test/123.wav";
        if (avformat_open_input(&format, url, nullptr, nullptr) < 0) {
            qDebug() << "open input failed";
-           return;
+           return -1;
        }
-       av_opt_set(format->priv_data, "tune", "zerolatency", 0);
-       av_opt_set(format->priv_data, "preset", "superfast", 0);
+       avformat_find_stream_info(format, NULL);
+//       av_opt_set(format->priv_data, "tune", "zerolatency", 0);
+//       av_opt_set(format->priv_data, "preset", "superfast", 0);
 
        if (auto input_format = format->iformat) {
 //           qDebug() << input_format->long_name;
@@ -24,7 +25,8 @@ void Audio_WAVE::init(QString filename){
            codec = format->streams[i]->codec;
            if (codec->codec_type == AVMEDIA_TYPE_AUDIO) {
                audio_codec = avcodec_find_decoder(codec->codec_id);
-//               qDebug()<<"采样率"<<codec->sample_rate;
+               qDebug()<<"采样率"<<codec->sample_rate;
+               audio_stream_index = i;
                break;
            }
        }
@@ -32,30 +34,56 @@ void Audio_WAVE::init(QString filename){
        if (audio_codec == nullptr) {
            qDebug()<< "no audio codec";
        }
+
+
        decoder = avcodec_alloc_context3(audio_codec);
+//       decoder = codec;
+       decoder->channels = codec->channels;
+       decoder->sample_rate = codec->sample_rate;
+       decoder->sample_fmt = codec->sample_fmt;
+       decoder->codec_type = codec->codec_type;
+       decoder->channel_layout = codec->channel_layout;
        if (avcodec_open2(decoder, audio_codec, nullptr) < 0) {
            qDebug() << "audio decoder open failed";
-           return;
+           return -1;
        }
 
 //       qDebug() << "open decoder success: ";
        bytes_per_sample =  av_get_bytes_per_sample(decoder->sample_fmt);
+       qDebug()<<"bytes_per_sample"<<bytes_per_sample;
+       qDebug()<<"sample rate"<<decoder->sample_rate;
+       qDebug()<<"channels"<<decoder->channels;
        packet = av_packet_alloc();
        frame = av_frame_alloc();
+       return 1;
 
 }
 double Audio_WAVE::get_wave_value(int position){
+//    AVPacket packet;
     double avg_A = 0;
     double ret_val = 0.5;
     std::vector<std::vector<uint8_t>> samples {};
 //       av_opt_set(format->priv_data, "tune", "zerolatency", 0);
        av_seek_frame(format, -1, (double(position)/double(1000))*AV_TIME_BASE, AVSEEK_FLAG_ANY);
-       int r = av_read_frame(format, packet);
+//       int r = av_read_frame(format, packet);
 //       qDebug()<<packet->data;
-       if (av_read_frame(format, packet)>=0){
+       int flag = 0;
+       while (av_read_frame(format, packet)>=0){
+           if(packet->stream_index == audio_stream_index){
+               flag = 1;
+               break;
+           }
+
+       }
+       if(flag == 0){
+           return -1;
+       }
+       else{
+           qDebug()<<"okok";
 //           int ret;
 //           avcodec_decode_audio4(codec, frame, &ret, packet);
-           avcodec_send_packet(decoder, packet);
+           int r = avcodec_send_packet(decoder, packet);
+           qDebug()<<"r"<<r;
            std::vector<uint8_t> bytes {};
 ////           int i= 0;
            int ret = avcodec_receive_frame(decoder, frame);
@@ -115,7 +143,14 @@ double Audio_WAVE::get_wave_value(int position){
 //                   }
                }
            }
-       return ret_val;}
+       av_packet_unref(packet);
+       return ret_val;
+       }
+//       }
+//       else{
+//           av_packet_unref(&packet);
+//           return -1;
+//       }
 
 //=======================================================================
 //               qDebug()<<"samples"<<frame->nb_samples;
@@ -147,4 +182,3 @@ void Audio_WAVE::stop(){
     avcodec_free_context(&decoder);
     avformat_close_input(&format);
 }
-

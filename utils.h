@@ -17,4 +17,5 @@ bool isValidVideoFile(QString filename);
 bool isVideoOrAudio(QString filename);
 QString transfer_to_std_time(qint64 miniseconds);
 void pngTomp4_2();
+bool isMOV();
 #endif // UTILS_H

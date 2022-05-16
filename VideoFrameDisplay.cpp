@@ -26,6 +26,7 @@ void VideoFrameDisplay::Set_Rotate(int Rotate)
 void VideoFrameDisplay::paintEvent(QPaintEvent *event)
 {
 
+//    qDebug()<<mImage.size();
     QPainter painter(this);
 
     painter.setRenderHint(QPainter::Antialiasing);
@@ -37,7 +38,9 @@ void VideoFrameDisplay::paintEvent(QPaintEvent *event)
     painter.drawRect(0,0,this->width(),this->height()); //先画成黑色
 
 
-    if (mImage.size().width() <= 0) return;
+    if (mImage.size().width() <= 0) {
+
+        return;};
 
 
     //将图像按比例缩放成和窗口一样大小
@@ -75,6 +78,21 @@ void VideoFrameDisplay::slotSetOneFrame(QImage img,double video_clock)
     video_mutex.lock();
 
     qDebug()<<"video pos"<<video_clock;
+    emit change_audio_s_video_time(video_clock*1000);
+
+//    video_time = video_clock * 1000;
+//    if(audio_time>video_time){
+//        emit callvideosleep(audio_time-video_time);
+//    }
+//    if(audio_time >= 0)
+//    if(video_time - audio_time > 100 || video_time - audio_time < -100){
+//        qDebug()<<"audio要休眠一下";
+//    }
+
+
+//    if(video_time - audio_time > 1){
+//        emit callaudiosleep(video_time - audio_time);
+//    }
 
 //            double audioTime = get_clock(&play_clock_s);
 
@@ -97,7 +115,7 @@ void VideoFrameDisplay::slotSetOneFrame(QImage img,double video_clock)
 //            {
 //                QThread::msleep(DiffTimeMs);
                 //    qDebug()<<"在花了";
-                      src_mImage =mImage = img;
+                      src_mImage = mImage = img;
                  //    qDebug()<<img.size();
                  //    img.save("D:\\images\\0.jpg");
                       repaint(); //调用update将执行 paintEvent函数
@@ -117,7 +135,7 @@ void VideoFrameDisplay::slotSetOneFrame(QImage img,double video_clock)
 //              while(!video_mutex);
 //       m_pTimer_video->start(40);
 //                      emit main_sleep();
-                      video_mutex.unlock();
+         video_mutex.unlock();
 
 
 }
@@ -127,6 +145,18 @@ void VideoFrameDisplay::slotSetOneAudioFrame(QByteArray byt,double audio_clock){
 
     audio_mutex.lock();
     qDebug()<<"audio pos"<<audio_clock;
+//    audio_time = audio_clock * 1000;
+//    if(video_time>=audio_time){
+//        emit callaudiosleep(video_time - audio_time);
+//    }
+//    else{
+//        return;
+//    }
+//    if(audio_time - video_time > 0.01){
+//        qDebug()<<"video你休息一下";
+//        emit callvideosleep((audio_time - video_time)*1000);
+////        return;
+//    }
     int writeBytes = qMin(byt.length(), audioOutput->bytesFree());
 //    qDebug()<<"writeBytes"<<writeBytes;
 //    qDebug()<<"音量为"<<audioOutput->volume();

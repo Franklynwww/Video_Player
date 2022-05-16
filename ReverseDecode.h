@@ -67,7 +67,13 @@ public:
     void StopPlay();
     void LogSend(QString text);
 
+    bool want_to_finished;
+
     bool finished = false;
+
+    qint64 sleeptime;
+
+//    bool novideo = false;
 
     //加载视频文件
     int LoadVideoFile(QString media);
@@ -147,5 +153,10 @@ private:
     qint64 m_oldPosMs; //保存上一次的帧时间
 
     QString file_suffix;
+
+    int video_tolerence;
+
+private slots:
+    void finish();
 };
 #endif // REVERSE_VIDEO_PLAY_H
