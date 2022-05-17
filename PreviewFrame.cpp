@@ -191,7 +191,9 @@ void PreviewFrame::GetFutureFrame(qint64 time){
 
     AVPacket pkt;
 
+//    pre_frame_mutex.lock();
     av_seek_frame(format_ctx, -1, (this->time - 1)*AV_TIME_BASE, AVSEEK_FLAG_BACKWARD);
+//    pre_frame_mutex.unlock();
 
     QList<IMAGE_FRAME_2> frame_pack;
 
@@ -203,10 +205,15 @@ void PreviewFrame::GetFutureFrame(qint64 time){
         if(m_run == 2){
             return;
         }
+
+//        pre_frame_mutex.lock();
         int r = av_read_frame(format_ctx, &pkt);
+//        pre_frame_mutex.unlock();
         if(r<0){
             break;
         }
+
+//        qDebug()<<"test point";
 
         if (pkt.stream_index == video_stream_index){
              //当前时间
@@ -593,6 +600,7 @@ void PreviewFrame::GetFutureFrame(qint64 time){
 
 void PreviewFrame::run(){
 
+    pre_frame_mutex.lock();
 //    video_stream_index = -1;
     m_run = 1;
 //    m_pTimer = new QTimer();
@@ -603,6 +611,7 @@ void PreviewFrame::run(){
 //    qDebug()<<"m_run"<<m_run;
 //    if(m_run == 1){
     emit isDone(this->frame);
+    pre_frame_mutex.unlock();
 //    }
 //    else{
 //        qDebug()<<"发出了";
@@ -641,7 +650,7 @@ void PreviewFrame::getClosetPacket(QList<IMAGE_FRAME_2> &frame_pack){
 //    qDebug()<<"min_index"<<min_index;
     if (min_index != -1 && frame_pack.length()!=0){
 
-        this->frame = frame_pack[min_index].image.copy();
+        this->frame = frame_pack[min_index].image;
         qDebug()<<"final_clock"<<frame_pack[min_index].video_clock;
 //        frame.save("D:\\0.jpg");
         return;
