@@ -42,7 +42,7 @@ struct IMAGE_FRAME
 //默认的间隔时间
 #define DEFAULT_DIFFER_TIME 40
 
-#define MAX_AUDIO_FRAME_SIZE 192000
+#define MAX_AUDIO_FRAME_SIZE 19200
 
 //视频音频解码线程
 class ReverseDecode:public QThread
@@ -130,6 +130,8 @@ private:
     AVFrame *SRC_VIDEO_pFrame = nullptr;
     uint8_t *out_buffer_rgb = nullptr;
     struct SwsContext *img_convert_ctx = nullptr;  //用于解码后的视频格式转换
+
+    AVCodecContext *vct;
 
 
     int audio_stream_index = -1;

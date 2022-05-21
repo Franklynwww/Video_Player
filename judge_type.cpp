@@ -86,8 +86,10 @@ int ori_judgetype(QString filename){
 //            qDebug()<<"count"<<count;
             av_read_frame(pFormatCtx, &packet);
             count += 1;
+            qDebug()<<"count in type judge"<<count;
             if(packet.stream_index == videoStream){
                 flag = 1;
+            av_packet_unref(&packet);
             }
         }
         if(flag == 0){

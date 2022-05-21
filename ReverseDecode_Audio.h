@@ -34,7 +34,7 @@ struct AUDIO_FRAME
 
 
 //默认的间隔时间
-#define DEFAULT_DIFFER_TIME 40
+#define DEFAULT_DIFFER_TIME_AUDIO 23
 
 #define MAX_AUDIO_FRAME_SIZE 192000
 
@@ -122,14 +122,14 @@ private:
 //    int video_stream_index = -1;
     AVFrame *RGB24_pFrame = nullptr;
     AVFrame *SRC_Audio_pFrame = nullptr;
-    uint8_t *out_buffer_rgb = nullptr;
+//    uint8_t *out_buffer_rgb = nullptr;
     struct SwsContext *img_convert_ctx = nullptr;  //用于解码后的视频格式转换
 
 
     int audio_stream_index = -1;
     AVCodecParameters   *aCodecParameters;
      AVCodec             *aCodec;
-     AVCodecContext      *aCodecCtx;
+     AVCodecContext      *avct;
 
 
      uint64_t out_channel_layout;
@@ -143,7 +143,7 @@ private:
 
     bool seek_state = 0; //偏移状态
 
-    qint32 m_DifferTime= DEFAULT_DIFFER_TIME; //两帧相差的时间
+    qint32 m_DifferTime= DEFAULT_DIFFER_TIME_AUDIO; //两帧相差的时间
 
     qint64 m_oldPosMs; //保存上一次的帧时间
 

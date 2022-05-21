@@ -26,7 +26,7 @@ void VideoFrameDisplay::Set_Rotate(int Rotate)
 void VideoFrameDisplay::paintEvent(QPaintEvent *event)
 {
 
-//    qDebug()<<mImage.size();
+//    qDebug()<<"画的大小位"<<mImage.size();
     QPainter painter(this);
 
     painter.setRenderHint(QPainter::Antialiasing);
@@ -44,8 +44,10 @@ void VideoFrameDisplay::paintEvent(QPaintEvent *event)
 
 
     //将图像按比例缩放成和窗口一样大小
+//    qDebug()<<"test point在这里1！！！！";
     QImage img = mImage.scaled(this->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation); //这里效率比较低下  还不知道如何优化
 
+//    qDebug()<<"test point在这里2！！！！";
     //画面旋转
     if(m_nRotateDegree > 0)
     {
@@ -53,15 +55,18 @@ void VideoFrameDisplay::paintEvent(QPaintEvent *event)
         matrix.rotate(m_nRotateDegree);
         img = img.transformed(matrix, Qt::SmoothTransformation);
     }
+//    qDebug()<<"test point在这里3！！！！";
 
     int x = this->width() - img.width();
     int y = this->height() - img.height();
 //    qDebug()<<x;
 //    qDebug()<<y;
+//    qDebug()<<"test point在这里4！！！！";
 
     x /= 2;
     y /= 2;
 
+//    qDebug()<<"test point在这里5！！！！";
 
 
 
@@ -75,7 +80,7 @@ void VideoFrameDisplay::slotSetOneFrame(QImage img,double video_clock)
 
 
 //    qDebug()<<"locked"<<video_mutex.tryLock();
-    video_mutex.lock();
+//    video_mutex.lock();
 
     qDebug()<<"video pos"<<video_clock;
     emit change_audio_s_video_time(video_clock*1000);
@@ -114,9 +119,9 @@ void VideoFrameDisplay::slotSetOneFrame(QImage img,double video_clock)
 //            if(DiffTimeMs >= 0)//视频时钟比主时钟快，则休眠
 //            {
 //                QThread::msleep(DiffTimeMs);
-                //    qDebug()<<"在花了";
+                    qDebug()<<"在花了";
                       src_mImage = mImage = img;
-                 //    qDebug()<<img.size();
+                     qDebug()<<img.size();
                  //    img.save("D:\\images\\0.jpg");
                       repaint(); //调用update将执行 paintEvent函数
 //}
@@ -135,15 +140,15 @@ void VideoFrameDisplay::slotSetOneFrame(QImage img,double video_clock)
 //              while(!video_mutex);
 //       m_pTimer_video->start(40);
 //                      emit main_sleep();
-         video_mutex.unlock();
+//         video_mutex.unlock();
 
 
 }
 
 void VideoFrameDisplay::slotSetOneAudioFrame(QByteArray byt,double audio_clock){
-//    qDebug()<<"在播了";
+    qDebug()<<"在播了";
 
-    audio_mutex.lock();
+//    audio_mutex.lock();
     qDebug()<<"audio pos"<<audio_clock;
 //    audio_time = audio_clock * 1000;
 //    if(video_time>=audio_time){
@@ -173,7 +178,7 @@ void VideoFrameDisplay::slotSetOneAudioFrame(QByteArray byt,double audio_clock){
     }
 
 //    emit main_sleep();
-    audio_mutex.unlock();
+//    audio_mutex.unlock();
 //    set_clock(&play_clock_s,audio_clock,0);
 
 //    QEventLoop eventloop;

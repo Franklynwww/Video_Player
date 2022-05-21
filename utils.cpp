@@ -6,7 +6,7 @@ bool isValidVideoFile(QString filename){
     for (int i = lastindex+1;i<filename.length();i++){
         type += filename[i];
     }
-    if (type == "avi" || type == "wmv" || type == "mpg" || type == "mpeg" || type == "mov" || type == "rm"
+    if (type == "avi" || type == "wmv" || type == "mpg" || type == "mpeg" || type == "rm"
             || type == "ram"  || type == "flv" || type == "mp4" || type == "mp3" || type == "wma"
             || type == "rmvb" || type == "mkv" || type == "wav"){
         return true;

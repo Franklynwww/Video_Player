@@ -6,15 +6,14 @@ int PreviewFrame::count = 0;
 
 PreviewFrame::PreviewFrame(){
 
-
+    av_register_all();
 }
 
 PreviewFrame::~PreviewFrame(){
-
+    if (img_convert_ctx)sws_freeContext(img_convert_ctx);
     if (SRC_VIDEO_pFrame) av_frame_free(&SRC_VIDEO_pFrame);
     if (RGB24_pFrame) av_frame_free(&RGB24_pFrame);
-    if (img_convert_ctx)sws_freeContext(img_convert_ctx);
-    if (out_buffer_rgb)av_free(out_buffer_rgb);
+//    if (out_buffer_rgb)free(out_buffer_rgb);
 
     SRC_VIDEO_pFrame = nullptr;
     RGB24_pFrame = nullptr;
@@ -23,6 +22,10 @@ PreviewFrame::~PreviewFrame(){
 
 //    video_stream_index = -1;
 
+
+    if(decoder){
+        avcodec_close(decoder);
+    }
 
     if (format_ctx)
     {
@@ -128,7 +131,10 @@ int PreviewFrame::before_start(QString filename){
             //查找解码器
             video_pCodec = avcodec_find_decoder(stream->codecpar->codec_id);
             //打开解码器
-            if (avcodec_open2(stream->codec, video_pCodec, nullptr) != 0)
+            decoder = avcodec_alloc_context3(video_pCodec);
+            avcodec_parameters_to_context(decoder, stream->codecpar);
+
+            if (avcodec_open2(decoder, video_pCodec, nullptr) != 0)
             {
                 qDebug()<<("解码器打开失败.\n");
                 return -1;
@@ -165,7 +171,7 @@ int PreviewFrame::before_start(QString filename){
 
     //将解码后的YUV数据转换成RGB24
     img_convert_ctx = sws_getContext(video_width, video_height,
-        format_ctx->streams[video_stream_index]->codec->pix_fmt, video_width, video_height,
+        decoder->pix_fmt, video_width, video_height,
         AV_PIX_FMT_RGB24, SWS_BICUBIC, nullptr, nullptr, nullptr);
 
     //计算RGB图像所占字节大小
@@ -191,6 +197,8 @@ void PreviewFrame::GetFutureFrame(qint64 time){
 
     AVPacket pkt;
 
+//    av_init_packet(&pkt);
+
 //    pre_frame_mutex.lock();
     av_seek_frame(format_ctx, -1, (this->time - 1)*AV_TIME_BASE, AVSEEK_FLAG_BACKWARD);
 //    pre_frame_mutex.unlock();
@@ -201,42 +209,56 @@ void PreviewFrame::GetFutureFrame(qint64 time){
 
     while (1)
     {
-//        qDebug()<<"m_run"<<m_run;
-        if(m_run == 2){
-            return;
+
+        pre_frame_internal_mutex.lock();
+        int r = av_read_frame(format_ctx, &pkt);
+        if(r<0){
+            av_packet_unref(&pkt);
+            pre_frame_internal_mutex.unlock();
+            break;
+
         }
+//        qDebug()<<"m_run"<<m_run;
+//        if(m_run == 2){
+//            return;
+//        }
 
 //        pre_frame_mutex.lock();
-        int r = av_read_frame(format_ctx, &pkt);
+//        int r = ;
 //        pre_frame_mutex.unlock();
-        if(r<0){
-            break;
-        }
+//        if(r<0){
+//            break;
+//        }
 
-//        qDebug()<<"test point";
+        qDebug()<<"test point";
 
         if (pkt.stream_index == video_stream_index){
              //当前时间
               double video_clock = av_q2d(format_ctx->streams[video_stream_index]->time_base) * pkt.pts;
-//              qDebug()<<"video_time"<<video_clock;
+              qDebug()<<"video_time"<<video_clock;
 
-              if(video_clock - time >= 3){
+              if(video_clock - time >= 2){
+//                  av_packet_unref(&pkt);
+                  pre_frame_internal_mutex.unlock();
                   break;
               }
 
             //解码视频 frame
             //发送视频帧
-            if (avcodec_send_packet(format_ctx->streams[video_stream_index]->codec, &pkt) != 0)
+            if (avcodec_send_packet(decoder, &pkt) != 0)
             {
                 av_packet_unref(&pkt);//不成功就释放这个pkt
+                pre_frame_internal_mutex.unlock();
                 continue;
             }
             //接受后对视频帧进行解码
-            if (avcodec_receive_frame(format_ctx->streams[video_stream_index]->codec, SRC_VIDEO_pFrame) != 0)
+            if (avcodec_receive_frame(decoder, SRC_VIDEO_pFrame) != 0)
             {
                 av_packet_unref(&pkt);//不成功就释放这个pkt
+                pre_frame_internal_mutex.unlock();
                 continue;
             }
+//            qDebug()<<"test point 1.2";
 
             //转格式
             sws_scale(img_convert_ctx,
@@ -245,12 +267,24 @@ void PreviewFrame::GetFutureFrame(qint64 time){
                 SRC_VIDEO_pFrame->linesize, 0, video_height, RGB24_pFrame->data,
                 RGB24_pFrame->linesize);
 
+//            qDebug()<<"test point 1.5";
+
             //释放包
-            av_packet_unref(&pkt);
+//            if()
+//            for(int i = 0;i <100;i++);
+
+//            av_packet_unref(&pkt);
+
+
+//            qDebug()<<"test point 2";
+
 
 //            pre_frame_mutex.lock();
             //加载图片数据
             QImage image(out_buffer_rgb, video_width, video_height, QImage::Format_RGB888);
+
+            qDebug()<<"test point 3";
+
 
             struct IMAGE_FRAME_2 image_frame;
             image_frame.image = image;
@@ -266,10 +300,22 @@ void PreviewFrame::GetFutureFrame(qint64 time){
             //添加到队列
             frame_pack.append(image_frame);
 
+//            qDebug()<<"test point 4";
+
+            av_packet_unref(&pkt);
+
+//            qDebug()<<"test point 6";
 
           }
+        else{
+//            qDebug()<<"time point 5";
+             av_packet_unref(&pkt);
+        }
+
+        pre_frame_internal_mutex.unlock();
 
     }
+    qDebug()<<"Len total"<<frame_pack.size();
     getClosetPacket(frame_pack);
 
 
@@ -612,6 +658,7 @@ void PreviewFrame::run(){
 //    if(m_run == 1){
     emit isDone(this->frame);
     pre_frame_mutex.unlock();
+    qDebug()<<"preframe线程结束了";
 //    }
 //    else{
 //        qDebug()<<"发出了";

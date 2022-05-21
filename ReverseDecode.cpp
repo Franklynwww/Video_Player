@@ -15,8 +15,11 @@ ReverseDecode::~ReverseDecode()
 {
     FreeRAM();
 
+//    if (vct) avcodec_close(vct);
+
     if (format_ctx)
     {
+
         avformat_close_input(&format_ctx);//释放解封装器的空间，以防空间被快速消耗完
         avformat_free_context(format_ctx);
     }
@@ -24,10 +27,22 @@ ReverseDecode::~ReverseDecode()
 
 void ReverseDecode::FreeRAM()
 {
-    if (SRC_VIDEO_pFrame) av_frame_free(&SRC_VIDEO_pFrame);
-    if (RGB24_pFrame) av_frame_free(&RGB24_pFrame);
+//    qDebug()<<"freeram开始";
+//    if(SRC_VIDEO_pFrame->data)av_freep(SRC_VIDEO_pFrame->data);
+//    if(SRC_VIDEO_pFrame->buf)av_freep(SRC_VIDEO_pFrame->buf);
+//    if(SRC_VIDEO_pFrame->extended_buf)av_freep(SRC_VIDEO_pFrame->extended_buf);
+//    if(SRC_VIDEO_pFrame->extended_data)av_freep(SRC_VIDEO_pFrame->extended_data);
+//    qDebug()<<"freeram开始1";
+
     if (img_convert_ctx)sws_freeContext(img_convert_ctx);
+//    qDebug()<<"freeram开始4";
+    if (SRC_VIDEO_pFrame) av_frame_free(&SRC_VIDEO_pFrame);
+//    qDebug()<<"freeram开始2";
+    if (RGB24_pFrame) av_frame_free(&RGB24_pFrame);
+//    qDebug()<<"freeram开始3";
     if (out_buffer_rgb)av_free(out_buffer_rgb);
+//    qDebug()<<"freeram开始5";
+
 
     SRC_VIDEO_pFrame = nullptr;
     RGB24_pFrame = nullptr;
@@ -35,6 +50,8 @@ void ReverseDecode::FreeRAM()
     out_buffer_rgb = nullptr;
 
     video_stream_index = -1;
+
+//    qDebug()<<"freeram结束";
 
 }
 
@@ -48,6 +65,7 @@ void ReverseDecode::FreeRAM()
 */
 int ReverseDecode::LoadVideoFile(QString media)
 {
+    qDebug()<<"load开始";
     //释放空间
     FreeRAM();
     strncpy(m_MediaFile, media.toUtf8().data(), sizeof(m_MediaFile));
@@ -82,12 +100,22 @@ int ReverseDecode::LoadVideoFile(QString media)
         {
             //查找解码器
             AVCodec *video_pCodec = avcodec_find_decoder(stream->codecpar->codec_id);
+
+            vct = avcodec_alloc_context3(video_pCodec);
+            avcodec_parameters_to_context(vct, stream->codecpar);
+
             //打开解码器
-            if (avcodec_open2(stream->codec, video_pCodec, nullptr) != 0)
+//            if (avcodec_open2(stream->codec, video_pCodec, nullptr) != 0)
+//            {
+//                LogSend(tr("解码器打开失败.\n"));
+//                return -1;
+//            }
+            if (avcodec_open2(vct, video_pCodec, nullptr) != 0)
             {
                 LogSend(tr("解码器打开失败.\n"));
                 return -1;
             }
+
             video_stream_index = i;
             //得到视频帧的宽高
             video_width = stream->codecpar->width;
@@ -95,6 +123,7 @@ int ReverseDecode::LoadVideoFile(QString media)
 
             LogSend(tr("视频帧的尺寸(以像素为单位): (宽X高)%1x%2 像素格式: %3\n").arg(
                 stream->codecpar->width).arg(stream->codecpar->height).arg(stream->codecpar->format));
+
         }
     }
 
@@ -107,6 +136,7 @@ int ReverseDecode::LoadVideoFile(QString media)
         return 1;
     }
 
+    qDebug()<<"222222";
     for (int i = 0; i < format_ctx->nb_streams; ++i)
     {
         const AVStream* stream = format_ctx->streams[i];
@@ -150,7 +180,9 @@ int ReverseDecode::LoadVideoFile(QString media)
 //    }
 
     AVRational frameRate = format_ctx->streams[video_stream_index]->avg_frame_rate;
+//    AVRational frameRate = format_ctx->streams[video_stream_index]->avg_frame_rate;
 
+    qDebug()<<"framerate"<<frameRate.den;
 
     /*设置视频转码器*/
     SRC_VIDEO_pFrame = av_frame_alloc();
@@ -158,12 +190,14 @@ int ReverseDecode::LoadVideoFile(QString media)
 
     //将解码后的YUV数据转换成RGB24
     img_convert_ctx = sws_getContext(video_width, video_height,
-        format_ctx->streams[video_stream_index]->codec->pix_fmt, video_width, video_height,
+        vct->pix_fmt, video_width, video_height,
         AV_PIX_FMT_RGB24, SWS_BICUBIC, nullptr, nullptr, nullptr);
 
+    qDebug()<<"Henkeneng";
     //计算RGB图像所占字节大小
     int numBytes = avpicture_get_size(AV_PIX_FMT_RGB24, video_width, video_height);
 
+    qDebug()<<"buffer size(B)"<<numBytes;
     //申请空间存放RGB图像数据
     out_buffer_rgb = (uint8_t *)av_malloc(numBytes * sizeof(uint8_t));
 
@@ -172,7 +206,7 @@ int ReverseDecode::LoadVideoFile(QString media)
         video_width, video_height);
 
     //申请空间存放重采样后的音频数据
-    out_buffer_audio = (uint8_t *)av_malloc(MAX_AUDIO_FRAME_SIZE*2);
+//    out_buffer_audio = (uint8_t *)av_malloc(MAX_AUDIO_FRAME_SIZE*2);
 
 
     over_pack.clear();
@@ -184,6 +218,8 @@ int ReverseDecode::LoadVideoFile(QString media)
 
     //初始值给视频的最大值
     m_oldPosMs = format_ctx->duration;
+
+    qDebug()<<"old_pos"<<m_oldPosMs;
 
     return 0;
 }
@@ -292,17 +328,17 @@ int ReverseDecode::DecodDataPack()
     if (video_pack.size() >= 2)
     {
         //如果等于默认时间
-        if (m_DifferTime == DEFAULT_DIFFER_TIME)
-        {
-            //计算间隔时间
-            qint32 m_tmp = (video_pack.at(1).video_clock - video_pack.at(0).video_clock) * 1000;
-            if(m_tmp>0)
-            {
-                //重新更新间隔时间
-                m_DifferTime =m_tmp;
-                qDebug() << "两帧相差的时间:" << m_DifferTime;
-            }
-        }
+//        if (m_DifferTime == DEFAULT_DIFFER_TIME)
+//        {
+//            //计算间隔时间
+//            qint32 m_tmp = (video_pack.at(3).video_clock - video_pack.at(2).video_clock) * 1000;
+//            if(m_tmp>0)
+//            {
+//                //重新更新间隔时间
+//                m_DifferTime =m_tmp;
+//                qDebug() << "两帧相差的时间:" << m_DifferTime;
+//            }
+//        }
     }
 
     if (video_pack.size() > 0)
@@ -316,6 +352,18 @@ int ReverseDecode::DecodDataPack()
         for (i = video_pack.size() - 1; i > cnt_i; i--)
         {
             //时间信号-秒转为毫秒
+            if (m_DifferTime == DEFAULT_DIFFER_TIME)
+            {
+                //计算间隔时间
+                qint32 m_tmp = (video_pack.at(i).video_clock - video_pack.at(i-1).video_clock) * 1000;
+                if(m_tmp>0)
+                {
+                    //重新更新间隔时间
+                    m_DifferTime =m_tmp;
+                    qDebug() << "两帧相差的时间video:" << m_DifferTime;
+                }
+            }
+
             qint64 pos_ms = video_pack.at(i).video_clock * 1000;
 //            qDebug()<<"ori_video_pos"<<pos_ms;
 
@@ -335,7 +383,7 @@ int ReverseDecode::DecodDataPack()
 //                    qDebug()<<"vedio要休眠一下";
 //                    msleep(3000);
 //                }
-                qDebug()<<"video_time_befor_emit"<<video_pack.at(i).video_clock;
+                qDebug()<<"video_pos"<<video_pack.at(i).video_clock;
                 emit SendOneFrame(video_pack.at(i).image.copy(),video_pack.at(i).video_clock);
 //                qDebug()<<"pos_before_emit"<<pos_ms<<"m_run"<<m_run;
                 if(video_pack.at(i).video_clock < 1){
@@ -347,6 +395,7 @@ int ReverseDecode::DecodDataPack()
 //                emit positionChanged1(pos_ms);
                 //同步画面,看起来差不多
                 //QThread::msleep(40);
+//                qDebug()<<"differ time"<<m_DifferTime;
                 QThread::msleep(m_DifferTime);
                 sleeptime = 0;
 
@@ -564,6 +613,7 @@ int ReverseDecode::StartPlay()
             //qDebug() << "完成一段解码.";
           //  QThread::sleep(5);
             qDebug() << "video数据读取完毕.";
+//            av_packet_unref(&pkt);
             continue;
         }
 
@@ -585,13 +635,13 @@ int ReverseDecode::StartPlay()
 
             //解码视频 frame
             //发送视频帧
-            if (avcodec_send_packet(format_ctx->streams[video_stream_index]->codec, &pkt) != 0)
+            if (avcodec_send_packet(vct, &pkt) != 0)
             {
                 av_packet_unref(&pkt);//不成功就释放这个pkt
                 continue;
             }
             //接受后对视频帧进行解码
-            if (avcodec_receive_frame(format_ctx->streams[video_stream_index]->codec, SRC_VIDEO_pFrame) != 0)
+            if (avcodec_receive_frame(vct, SRC_VIDEO_pFrame) != 0)
             {
                 av_packet_unref(&pkt);//不成功就释放这个pkt
                 continue;
@@ -605,7 +655,7 @@ int ReverseDecode::StartPlay()
                 RGB24_pFrame->linesize);
 
             //释放包
-            av_packet_unref(&pkt);
+
             qDebug()<<"m_endSeekPos_image"<<m_endSeekPos;
 
             //加载图片数据
@@ -666,6 +716,7 @@ int ReverseDecode::StartPlay()
             }
 
             }
+//            av_packet_unref(&pkt);
         }
 
 //        if (pkt.stream_index == audio_stream_index)

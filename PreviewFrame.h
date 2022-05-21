@@ -89,6 +89,7 @@ public:
     QTimer* m_pTimer;
     AVFormatContext * format_ctx;
     AVCodec *video_pCodec;
+    AVCodecContext * decoder;
     int video_height;
     int video_width;
     int video_stream_index = -1;

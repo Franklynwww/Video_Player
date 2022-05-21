@@ -103,6 +103,12 @@ private:
 
     void doBeforeChangeMedia(QString nextFilename);
 
+    void playCacheFile();
+
+    void recoverFromCacheFile();
+
+    bool isCacheFile = false;
+
     int ori_widget_x;
     int ori_widget_y;
     int ori_widget_width;
@@ -230,6 +236,8 @@ private:
     int ori_verticalSlider_width;
     int ori_verticalSlider_height;
 
+    QString ori_filename;
+
 
 
 
@@ -248,6 +256,7 @@ private slots:
     //播放函数
     void play();
     //获取播放状态
+    void mediaStateChanged_0(QMediaPlayer::MediaStatus status);
     void mediaStateChanged(QMediaPlayer::State state);
     //改变播放进度位置
     void postionChanged(qint64 position);
