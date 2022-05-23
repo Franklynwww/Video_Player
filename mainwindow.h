@@ -32,8 +32,11 @@ public:
     ~MainWindow();
 
 private:
+//    bool using_4;
+//    QList<QMediaContent> content_list;
     double availableScreenX;
     double availableScreenY;
+    qint64 ori_pos;
     int type;
     QQueue<float> m_dataQueue;
     int m_bufferSize = 50;
@@ -48,14 +51,19 @@ private:
     double old_wave_value = 0.;
     ReverseDecode DecodeWork;
     ReverseDecode_Audio DecodeWorkAudio;
+    ReverseDecode DecodeWork2;
+    ReverseDecode_Audio DecodeWorkAudio2;
     PreviewFrame previewFrame;
     Ui::MainWindow *ui;
     QMediaPlayer * mediaplayer;
     QMediaPlayer* mediaplayer2;
+    QMediaPlaylist * media_play_list;
     WAVFILEHEADER WavFileHeader;
     QTimer*  m_pTimer;
     QTimer*  m_pTimer_preframe;
     QTimer*  m_pTimer_fullscreen;
+    QTimer* m_pTimer_2;
+
     int zero_tolerence = 0;
 
     bool continue_;
@@ -238,6 +246,8 @@ private:
 
     QString ori_filename;
 
+    bool notkey = false;
+
 
 
 
@@ -258,6 +268,8 @@ private slots:
     //获取播放状态
     void mediaStateChanged_0(QMediaPlayer::MediaStatus status);
     void mediaStateChanged(QMediaPlayer::State state);
+    void mediaStateChanged2(QMediaPlayer::State);
+
     //改变播放进度位置
     void postionChanged(qint64 position);
     //获取播放位置
@@ -306,6 +318,7 @@ private slots:
     void on_toolButton_9_clicked();
 
     void threadFinished();
+    void threadFinished2();
 
     void slotGetCurrentTime(qint64);
     void on_horizontalSlider_2_sliderMoved(int position);
@@ -321,13 +334,12 @@ private slots:
     void testWav();
     void on_timer_timeout();
     void on_timer_timeout_fullscreen();
+    void on_time_timeout_2();
 
 
     void on_toolButton_10_clicked();
 
     void sleepforms();
-
-    void threadFinished2();
     void on_listWidget_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous);
     void on_listWidget_currentRowChanged(int currentRow);
     void on_listWidget_itemClicked(QListWidgetItem *item);

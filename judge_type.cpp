@@ -19,7 +19,6 @@ int judgetype(QString filename){
 }
 
 int ori_judgetype(QString filename){
-//    return judgetype(filename);
         QList<QImage> l;
     //    QList<PACKET_FRAME> pack_frame_list;
         qDebug()<<"线程运行";

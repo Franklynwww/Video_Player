@@ -23,6 +23,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
 
+//    this->content_list.append(QMediaContent(QUrl::fromLocalFile("D:/qtproject/Video_Player/video_test/刘惜君、王赫野、天赐的声音 - 晚风心里吹 - 天赐的声音第三季 第6期.mkv")));
+
 //    audio_wave.init("");
 
 
@@ -47,15 +49,9 @@ MainWindow::MainWindow(QWidget *parent) :
     QPalette palette;
     palette.setBrush(backgroundRole(),QBrush(pixmap));
     setPalette(palette);
-//    ui->centralWidget->setStyleSheet("background-image:url(:/images/play.png);background-repeat:no-repeat;");
-    //创建mediaplayer
-    //先禁止最大化
-    setWindowFlags(windowFlags() &~ Qt::WindowMaximizeButtonHint);
-    mediaplayer = new QMediaPlayer(this);
-    //设置对应mediaplayer的QVideoWidget
-    mediaplayer->setVideoOutput(ui->widget);
 
-    mediaplayer->setMedia(NULL);
+
+//    mediaplayer->setMedia(QUrl::fromLocalFile("D:\\qtproject\\Video_Player\\video_test\\刘惜君、王赫野、天赐的声音 - 晚风心里吹.mkv"));
 //    qDebug()<<"duratioo of cache"<<mediaplayer->duration();
 //    mediaplayer->play();
 
@@ -64,6 +60,15 @@ MainWindow::MainWindow(QWidget *parent) :
     availableScreenX = deskRect.width();
     availableScreenY = deskRect.height();
 //    ui->centralWidget->setWindowFlags (Qt::Window);
+
+    setWindowFlags(windowFlags() &~ Qt::WindowMaximizeButtonHint);
+    mediaplayer = new QMediaPlayer();
+    //设置对应mediaplayer的QVideoWidget
+    mediaplayer->setVideoOutput(ui->widget);
+
+//    mediaplayer->setMedia(QUrl::fromLocalFile("D:/qtproject/Video_Player/video_test/fff.mkv"));
+//    mediaplayer->play();
+
 
     ui->widget->move(availableScreenX/50,availableScreenY/50);
     ui->widget->resize((double)availableScreenX/2.3,(double)availableScreenY/2.3);
@@ -198,7 +203,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     //设置播放属性
     //1、监听信号变化函数,signal为内置的信号函数stateChanged，slot为自己定义的槽函数mediaStateChanged
-    connect(mediaplayer,SIGNAL(mediaStatusChanged(QMediaPlayer::MediaStatus)),this,SLOT(mediaStateChanged_0(QMediaPlayer::MediaStatus)),Qt::DirectConnection); //播放状态变化
+//    connect(mediaplayer,SIGNAL(mediaStatusChanged(QMediaPlayer::MediaStatus)),this,SLOT(mediaStateChanged_0(QMediaPlayer::MediaStatus)),Qt::DirectConnection); //播放状态变化
     connect(mediaplayer,SIGNAL(stateChanged(QMediaPlayer::State)),this,SLOT(mediaStateChanged(QMediaPlayer::State))); //播放状态变化
     //2、播放进度信号变化函数,signal为内置的信号函数positionChanged，slot为自己定义的槽函数postionChanged(qint64)
     connect(mediaplayer,SIGNAL(positionChanged(qint64)),this,SLOT(postionChanged(qint64))); //播放进度变化
@@ -297,6 +302,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(&DecodeWork,SIGNAL(isDone()),this,SLOT(threadFinished()));
 
+
+
     //10. 关联音频播放器
     connect(&DecodeWorkAudio,SIGNAL(SendOneAudioFrame(QByteArray,double)),ui->widget_2,SLOT(slotSetOneAudioFrame(QByteArray,double)),Qt::BlockingQueuedConnection);
 
@@ -310,6 +317,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(&DecodeWork,SIGNAL(noVideo()),this,SLOT(no_video_handle()));
 
+
+    connect(&DecodeWork2,SIGNAL(isDone()),this,SLOT(threadFinished2()));
+    connect(&DecodeWorkAudio2,SIGNAL(isDone2()),this,SLOT(threadFinished2()));
+
+
     connect(&previewFrame,SIGNAL(isDone(QImage)),this,SLOT(setPreviewFrame(QImage)),Qt::BlockingQueuedConnection);
 
 //    connect(&previewFrame,SIGNAL(notDone()),this,SLOT(restartPreviewFrame()));
@@ -319,6 +331,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_pTimer->setSingleShot(true);
     m_pTimer_fullscreen = new QTimer(this);
     m_pTimer_preframe = new QTimer();
+    m_pTimer_2 = new QTimer(this);
 
 
     connect(m_pTimer, SIGNAL(timeout()), this, SLOT(on_timer_timeout()));
@@ -327,6 +340,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(&previewFrame,SIGNAL(begintoread()),this,SLOT(start_timer()),Qt::DirectConnection);
     connect(m_pTimer_preframe,SIGNAL(timeout()),this,SLOT(setCallBack()),Qt::DirectConnection);
     connect(&previewFrame,SIGNAL(finishedread()),this,SLOT(stoptimer()),Qt::DirectConnection);
+    connect(m_pTimer_2, SIGNAL(timeout()),this,SLOT(on_time_timeout_2()));
 //    connect(this,SIGNAL(unlock_signal()),ui->widget_2,SLOT(unlock_mutex()),Qt::DirectConnection);
     this->filepath = QDir::currentPath()+"/playList.txt";
     qDebug()<<this->filepath;
@@ -380,7 +394,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
     ui->toolButton_8->setText("倒放");
+
     initPlayList();
+
 
     ffmpegtest(113);
 
@@ -556,6 +572,12 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->horizontalSlider_2->setAutoFillBackground(true); //这句很关键，否则背景色被默认windows替代
     ui->horizontalSlider_2->setPalette(label_palette);
 
+//    ui->widget_4->setParent(ui->centralWidget);
+
+
+
+
+
 }
 
 MainWindow::~MainWindow()
@@ -565,13 +587,17 @@ MainWindow::~MainWindow()
 
 
 void MainWindow::mediaStateChanged_0(QMediaPlayer::MediaStatus status){
-    qDebug()<<"Jiaz";
-    if(status == QMediaPlayer::LoadedMedia){
-        qDebug()<<"Jia111111z";
-        this->mediaplayer->play();
-    }
+//    qDebug()<<"Jiaz";
+//    if(status == QMediaPlayer::LoadedMedia){
+//        qDebug()<<"Jia111111z";
+//        this->play();
+//    }
 }
 void MainWindow::play(){
+//    while(this->mediaplayer->mediaStatus() != QMediaPlayer::LoadedMedia);
+//    qDebug()<<"status"<<this->mediaplayer->mediaStatus();
+//    qDebug()<<"state"<<this->mediaplayer->state();
+    if(1){
     switch (this->mediaplayer->state()) {
     case QMediaPlayer::PlayingState: //Playing状态
         this->mediaplayer->pause();
@@ -584,6 +610,7 @@ void MainWindow::play(){
 //        connect(v, SIGNAL(frameAvailable(QVideoFrame &)), this, SLOT(ProcessFrame(QVideoFrame &)));
         this->mediaplayer->play();
         break;
+    }
     }
 //    qDebug()<<3333;
 
@@ -625,40 +652,70 @@ void MainWindow::mediaStateChanged(QMediaPlayer::State state){//槽函数，触�
 }
 
 void MainWindow::postionChanged(qint64 position){//槽函数，触发条件：视频进度自动改变
-//    qDebug()<<"pos_pos"<<position;
+    qDebug()<<"ori_pos"<<ori_pos;
+//    qDebug()<<"status1"<<this->mediaplayer->mediaStatus();
     if(isCacheFile){
         qDebug()<<"cache_pos"<<position;
         qDebug()<<"cache_dur"<<mediaplayer->duration();
     }
-    if(position == 0 && this->mediaplayer->state() == QMediaPlayer::PlayingState){
+    if(position == ori_pos && this->mediaplayer->state() == QMediaPlayer::PlayingState){
         zero_tolerence ++;
         qDebug()<<"zero"<<zero_tolerence;
         if(zero_tolerence == 10){
             QMessageBox::warning(this, tr("Error"),
-                                           tr("解码时间超限制，请稍后再点击确认按钮，点击后将马上重试")
+                                           tr("解码时间超限制，正在尝试重新载入")
                                            );
+            playCacheFile();
+//            this->mediaplayer->setMedia(QUrl::fromLocalFile(""));
+//            for(int i =0 ;i<100;i++){
+//                qDebug()<<1;
+//            }
+//            mediaplayer->setMedia(QUrl::fromLocalFile(playList[current_index]));
+//            mediaplayer->play();
+
+
+
+//            playCacheFile();
+//            this->mediaplayer->stop();
+//            this->mediaplayer->set
+//            this->mediaplayer->setMedia(QUrl::fromLocalFile(""));
+//            this->mediaplayer->play();
 
 //            for(int i=0;i<1000;i++){
 //                int y = 1;
 //            }
-            this->mediaplayer->setMedia(QUrl::fromLocalFile(""));
-//            this->mediaplayer->play();
-            this->mediaplayer->setMedia(QUrl::fromLocalFile(this->playList[this->current_index]));
-//            this->mediaplayer->play();
-//            playCacheFile();
-////            this->mediaplayer->stop();
-//            qDebug()<<"state"<<this->mediaplayer->state();
-////            qDebug()<<QDir::currentPath();
-////            this->mediaplayer->setMedia(QUrl::fromLocalFile(QDir::currentPath()+"/01.wmv"));
-////            delete mediaplayer;
-////            mediaplayer = new QMediaPlayer(this);
-//            mediaplayer->setVideoOutput(ui->widget);
-////            this->mediaplayer->play();
+
+//            this->mediaplayer->stop();
+//                        this->mediaplayer->setMedia(QUrl::fromLocalFile(""));
+//                        for(int i = 0;i <100;i++){
+//                            qDebug()<<1;
+//                        }
+//                        this->play();
+////            doBeforeChangeMedia(this->playList[this->current_index]);
 //            this->mediaplayer->setMedia(QUrl::fromLocalFile(this->playList[this->current_index]));
-////            this->mediaplayer->setPosition(500);
-//            this->mediaplayer->play();
+//            for(int i =0;i<100;i++){
+//                qDebug()<<2;
+//            }
+//            this->play();
+//            this->setPosition(0);
+////            playCacheFile();
+//////            this->mediaplayer->stop();
+////            qDebug()<<"state"<<this->mediaplayer->state();
+//////            qDebug()<<QDir::currentPath();
+//////            this->mediaplayer->setMedia(QUrl::fromLocalFile(QDir::currentPath()+"/01.wmv"));
+//////            delete mediaplayer;
+//////            mediaplayer = new QMediaPlayer(this);
+////            mediaplayer->setVideoOutput(ui->widget);
+//////            this->mediaplayer->play();
+////            this->mediaplayer->setMedia(QUrl::fromLocalFile(this->playList[this->current_index]));
+//////            this->mediaplayer->setPosition(500);
+////            this->mediaplayer->play();
             zero_tolerence = 0;
         }
+    }
+    if(position!=ori_pos){
+        ori_pos = position;
+        zero_tolerence = 0;
     }
     //
 //    qDebug()<<this->mediaplayer->state();
@@ -701,16 +758,17 @@ void MainWindow::postionChanged(qint64 position){//槽函数，触发条件：�
     if(position !=0 && position >= this->mediaplayer->duration() && this->mediaplayer->duration()>0 && ui->toolButton_7->toolTip() == "单曲循环" && this->isCacheFile == false){
 
         ui->horizontalSlider->setMouseTracking(false);
-        this->mediaplayer->setMedia(QUrl::fromLocalFile(this->playList[this->current_index]));
         doBeforeChangeMedia(this->playList[this->current_index]);
-//        this->mediaplayer->play();
+        this->mediaplayer->setMedia(QUrl::fromLocalFile(this->playList[this->current_index]));
+
+        this->play();
         ui->horizontalSlider->setMouseTracking(true);
         return;
     }
-    if(position!=0&& position >= this->mediaplayer->duration() && this->isCacheFile){
-        recoverFromCacheFile();
-        return;
-    }
+//    if(position!=0&& position >= this->mediaplayer->duration() && this->isCacheFile){
+//        recoverFromCacheFile();
+//        return;
+//    }
 
 
 //    if(position < ori_position + 300 * 50){
@@ -837,6 +895,7 @@ void MainWindow::durationChanged(qint64 duration){ //槽函数，触发条件：
     qDebug()<<"dur"<<duration;
     ui->label->setText(transfer_to_std_time(duration));
     ui->horizontalSlider->setRange(0,duration); 
+//    this->play();
 }
 
 void MainWindow::on_horizontalSlider_sliderMoved(int position) //槽函数，触发条件：主动移动进度条
@@ -867,10 +926,15 @@ void MainWindow::on_toolButton_2_clicked()
                                            );
             return;
         }
+        this->mediaplayer->setMedia(QUrl::fromLocalFile(""));
         qDebug()<<"文件名"<<filename;
+        for(int i =0 ;i<100;i++){
+            qDebug()<<1;
+        }
         ui->horizontalSlider->setMouseTracking(false);
-        mediaplayer->setMedia(QUrl::fromLocalFile(filename));
         doBeforeChangeMedia(filename);
+        mediaplayer->setMedia(QUrl::fromLocalFile(filename));
+        this->play();
 
 
 
@@ -927,6 +991,7 @@ void MainWindow::initPlayList(){
     emit playListChanged();
 
 //    ui->listWidget->addItems(fonts);//把各行添加到listwidget
+
 }
 
 int MainWindow::findInPlayList(QString filename){
@@ -1074,11 +1139,15 @@ void MainWindow::on_listWidget_doubleClicked(const QModelIndex &index)
     QFile file(filename);
     if(file.exists())
     {
+        this->mediaplayer->setMedia(QUrl::fromLocalFile(""));
+        for(int i =0 ;i<100;i++){
+            qDebug()<<1;
+        }
         qDebug()<<"文件存在";
         this->current_index = cur_index;
-        this->mediaplayer->setMedia(QUrl::fromLocalFile(filename));
         doBeforeChangeMedia(filename);
-//        this->play();
+        this->mediaplayer->setMedia(QUrl::fromLocalFile(filename));
+        this->play();
         ui->horizontalSlider->setMouseTracking(true);
         for(int i = 0;i<this->playList.length();i++){
             if (i == this->current_index){
@@ -1421,12 +1490,19 @@ void MainWindow::reverseItemSlot(){
 
 void MainWindow::getNextAccessible(int first_index){
     ui->horizontalSlider->setMouseTracking(false);
+//    this->mediaplayer->stop();
+
+//    this->mediaplayer->play();
     qDebug()<<"first_index"<<first_index;
     int cur_index = first_index;
     while (cur_index<this->playList.length()){
         QString nextfilename = this->playList[cur_index];
         QFile file(nextfilename);
         if (file.exists()){
+            this->mediaplayer->setMedia(QUrl::fromLocalFile(""));
+            for(int i =0 ;i<100;i++){
+                qDebug()<<1;
+            }
             this->current_index = cur_index;
 
 
@@ -1436,18 +1512,20 @@ void MainWindow::getNextAccessible(int first_index){
 //                qDebug()<<y;
 //            }
 
-            this->mediaplayer->stop();
-            qDebug()<<"setmedia开始";
+//            this->mediaplayer->stop();
+//            qDebug()<<"setmedia开始";
+            doBeforeChangeMedia(nextfilename);
             this->mediaplayer->setMedia(QUrl::fromLocalFile(nextfilename));
             qDebug()<<"nextfile"<<nextfilename;
             qDebug()<<"setmedia结束";
-            doBeforeChangeMedia(nextfilename);
+
 
 //            while(!(QMediaPlayer::MediaStatus)this->mediaplayer->state() == QMediaPlayer::LoadedMedia);
 //            this->mediaplayer->play();
             qDebug()<<"为何没有";
-
-//            this->play();
+//            this->setPosition(0);
+            this->play();
+//            this->setPosition(0);
             ui->horizontalSlider->setMouseTracking(true);
             qDebug()<<"还好在呢";
 //            for(int i = 0;i<this->playList.length();i++){
@@ -1472,10 +1550,15 @@ void MainWindow::getNextAccessible(int first_index){
         QString nextfilename = this->playList[cur_index];
         QFile file(nextfilename);
         if (file.exists()){
+            this->mediaplayer->setMedia(QUrl::fromLocalFile(""));
+            for(int i =0 ;i<100;i++){
+                qDebug()<<1;
+            }
             this->current_index = cur_index;
-            this->mediaplayer->setMedia(QUrl::fromLocalFile(nextfilename));
             doBeforeChangeMedia(nextfilename);
-//            this->play();
+            this->mediaplayer->setMedia(QUrl::fromLocalFile(nextfilename));
+//            this->setPosition(0);
+            this->play();
             ui->horizontalSlider->setMouseTracking(true);
             for(int i = 0;i<this->playList.length();i++){
                 if (i == this->current_index){
@@ -1495,7 +1578,7 @@ void MainWindow::getNextAccessible(int first_index){
     if (this->playList.length() == 0){
         this->mediaplayer->setMedia(NULL);
         this->current_index = -1;
-//        this->play();
+        this->play();
         ui->horizontalSlider->setMouseTracking(true);
         if(ui->widget->isVisible()){
             ui->widget->setVisible(false);
@@ -1515,15 +1598,22 @@ void MainWindow::getNextAccessible(int first_index){
 
 void MainWindow::getPreviousAccessible(int first_index){
     ui->horizontalSlider->setMouseTracking(false);
+//    this->mediaplayer->stop();
+
+//    this->play();
     int cur_index = first_index;
     while (cur_index>=0 && this->playList.length()>0){
         QString prefilename = this->playList[cur_index];
         QFile file(prefilename);
         if (file.exists()){
+            this->mediaplayer->setMedia(QUrl::fromLocalFile(""));
+            for(int i =0 ;i<100;i++){
+                qDebug()<<1;
+            }
             this->current_index = cur_index;
-            this->mediaplayer->setMedia(QUrl::fromLocalFile(prefilename));
             doBeforeChangeMedia(prefilename);
-//            this->play();
+            this->mediaplayer->setMedia(QUrl::fromLocalFile(prefilename));
+            this->play();
             ui->horizontalSlider->setMouseTracking(true);
 //            for(int i = 0;i<this->playList.length();i++){
 //                if (i == this->current_index){
@@ -1533,7 +1623,7 @@ void MainWindow::getPreviousAccessible(int first_index){
 //                    ui->listWidget->item(i)->setTextColor(QColor(0,0,0));
 //                }
 //            }
-            qDebug()<<"上一首染色了；";
+//            qDebug()<<"上一首染色了；";
             emit playListChanged();
             return;
         }
@@ -1548,10 +1638,15 @@ void MainWindow::getPreviousAccessible(int first_index){
         QString prefilename = this->playList[cur_index];
         QFile file(prefilename);
         if (file.exists()){
+            this->mediaplayer->setMedia(QUrl::fromLocalFile(""));
+            for(int i =0 ;i<100;i++){
+                qDebug()<<1;
+            }
             this->current_index = cur_index;
-            this->mediaplayer->setMedia(QUrl::fromLocalFile(prefilename));
             doBeforeChangeMedia(prefilename);
-//            this->play();
+            this->mediaplayer->setMedia(QUrl::fromLocalFile(prefilename));
+
+            this->play();
             ui->horizontalSlider->setMouseTracking(true);
             for(int i = 0;i<this->playList.length();i++){
                 if (i == this->current_index){
@@ -1574,7 +1669,7 @@ void MainWindow::getPreviousAccessible(int first_index){
     if (this->playList.length() == 0){
         this->mediaplayer->setMedia(NULL);
         this->current_index = -1;
-//        this->play();
+        this->play();
         ui->horizontalSlider->setMouseTracking(true);
         emit playListChanged();
         return;
@@ -2062,7 +2157,7 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
 {
     QString key_info = QKeySequence(e->modifiers() + e->key()).toString();
     qDebug()<<key_info;
-    if (this->current_index == -1){
+    if (this->current_index == -1 || this->notkey){
         return;
     }
     if (key_info == "Space"){
@@ -2119,7 +2214,7 @@ void MainWindow::on_toolButton_8_clicked()
         QString filename = this->playList[this->current_index];
         this->reverse_duration = ui->horizontalSlider->maximum();
         this->mediaplayer->setMedia(QUrl::fromLocalFile(""));
-//        this->mediaplayer->play();
+        this->play();
 
         ui->widget->setVisible(false);
         this->current_index = -1;
@@ -2204,9 +2299,9 @@ void MainWindow::on_toolButton_8_clicked()
 
 
             DecodeWork.LoadVideoFile(filename);
-            qDebug()<<"凯斯到了0";
+//            qDebug()<<"凯斯到了0";
             DecodeWorkAudio.LoadVideoFile(filename);
-            qDebug()<<"凯斯到了";
+//            qDebug()<<"凯斯到了";
             DecodeWork.SetSate(1);
             DecodeWorkAudio.SetSate(1);
             reverse_duration=DecodeWork.GetDuration(); //获取总时间
@@ -2284,9 +2379,12 @@ void MainWindow::on_toolButton_8_clicked()
        ui->horizontalSlider->setMinimum(0); //设置最小值
        ui->horizontalSlider->setValue(0);
        this->mediaplayer->setMedia(QUrl::fromLocalFile(this->file_reverse));
-//       this->mediaplayer->play();
+//       doBeforeChangeMedia(this->file_reverse);
        qDebug()<<"倒放后的状态"<<mediaplayer->state();
+
+       this->play();
        setPosition(this->last_begin_to_reverse);
+
        if(type == AUDIO){
            //           ui->widget_2->setVisible(false);
 
@@ -3088,6 +3186,8 @@ void MainWindow::doBeforeChangeMedia(QString nextFilename){
     dontshow = false;
     dontpreview = false;
     zero_tolerence = 0;
+    ori_pos = -1;
+//    ui->widget_4->setVisible(false);
 
     previewFrame.m_run = 2;
 
@@ -3183,61 +3283,61 @@ void MainWindow::on_toolButton_10_clicked()
 //     ui->toolButton_10->raise();
     ui->centralWidget->setWindowFlags (Qt::Window);
     ui->centralWidget->showFullScreen();
-    ui->widget->move(10,0);
-    ui->widget->resize(ui->centralWidget->width()-20,ui->centralWidget->height()-20);
+    ui->widget->move(0,0);
+    ui->widget->resize(ui->centralWidget->width(),ui->centralWidget->height());
 
-    ui->widget_2->move(10,0);
-    ui->widget_2->resize(ui->centralWidget->width()-20,ui->centralWidget->height()-20);
-    ui->widget_3->move(10,0);
-    ui->widget_3->resize(ui->centralWidget->width()-20,ui->centralWidget->height()-20);
+    ui->widget_2->move(0,0);
+    ui->widget_2->resize(ui->centralWidget->width(),ui->centralWidget->height());
+    ui->widget_3->move(0,0);
+    ui->widget_3->resize(ui->centralWidget->width(),ui->centralWidget->height());
     ui->listWidget->setVisible(false);
     ui->textBrowser->setVisible(false);
-    ui->toolButton->move(ori_toolbutton_x,ui->widget->height()-ui->toolButton->height()+10);
+    ui->toolButton->move(ori_toolbutton_x,ui->widget->height()-ui->toolButton->height()-10);
     ui->toolButton->raise();
-    ui->toolButton_5->move(ori_toolbutton_5_x,ui->widget->height()-ui->toolButton_5->height()+10);
+    ui->toolButton_5->move(ori_toolbutton_5_x,ui->widget->height()-ui->toolButton_5->height()-10);
     ui->toolButton_5->raise();
-    ui->toolButton_6->move(ori_toolbutton_6_x,ui->widget->height()-ui->toolButton_6->height()+10);
+    ui->toolButton_6->move(ori_toolbutton_6_x,ui->widget->height()-ui->toolButton_6->height()-10);
     ui->toolButton_6->raise();
-    ui->horizontalSlider->move(ori_horizontalSlider_x, ui->widget->height()-ui->horizontalSlider->height()+10);
+    ui->horizontalSlider->move(ori_horizontalSlider_x, ui->widget->height()-ui->horizontalSlider->height()-10);
     ui->horizontalSlider->resize(ori_horizontalSlider_width+100,ui->horizontalSlider->height());
     ui->horizontalSlider->raise();
-    ui->toolButton_2->move(ori_toolbutton_2_x + 100,ui->widget->height() - ui->toolButton_2->height()+10);
+    ui->toolButton_2->move(ori_toolbutton_2_x + 100,ui->widget->height() - ui->toolButton_2->height()-10);
     ui->toolButton_2->raise();
-    ui->toolButton_3->move(ori_toolbutton_3_x + 100,ui->widget->height() - ui->toolButton_3->height()+10);
+    ui->toolButton_3->move(ori_toolbutton_3_x + 100,ui->widget->height() - ui->toolButton_3->height()-10);
     ui->toolButton_3->raise();
-    ui->toolButton_4->move(ori_toolbutton_4_x + 100,ui->widget->height() - ui->toolButton_4->height()+10);
+    ui->toolButton_4->move(ori_toolbutton_4_x + 100,ui->widget->height() - ui->toolButton_4->height()-10);
     ui->toolButton_4->raise();
-    ui->comboBox->move(ori_combox_x+100,ui->widget->height()-ui->comboBox->height()+10);
+    ui->comboBox->move(ori_combox_x+100,ui->widget->height()-ui->comboBox->height()-10);
     ui->comboBox->raise();
-    ui->toolButton_7->move(ori_toolbutton_7_x + 100,ui->widget->height() - ui->toolButton_7->height()+10);
+    ui->toolButton_7->move(ori_toolbutton_7_x + 100,ui->widget->height() - ui->toolButton_7->height()-10);
     ui->toolButton_7->raise();
-    ui->toolButton_8->move(ori_toolbutton_8_x + 100,ui->widget->height() - ui->toolButton_8->height()+10);
+    ui->toolButton_8->move(ori_toolbutton_8_x + 100,ui->widget->height() - ui->toolButton_8->height()-10);
     ui->toolButton_8->raise();
-    ui->toolButton_10->move(ori_toolbutton_10_x + 100,ui->widget->height() - ui->toolButton_10->height()+10);
+    ui->toolButton_10->move(ori_toolbutton_10_x + 100,ui->widget->height() - ui->toolButton_10->height()-10);
     ui->toolButton_10->raise();
-    ui->label->move(ori_label_x + 100,ui->widget->height() - ui->horizontalSlider->height() + 4);
+    ui->label->move(ori_label_x + 100,ui->horizontalSlider->y() - ui->label->height() - 1);
     ui->label->raise();
-    ui->label_2->move(ori_label_2_x + 100,ui->widget->height() -  ui->horizontalSlider->height() + 4);
+    ui->label_2->move(ori_label_2_x + 100,ui->horizontalSlider->y() - ui->label_2->height() - 1);
     ui->label_2->raise();
-    ui->label_3->move(ori_label_3_x + 100,ui->widget->height() -  ui->horizontalSlider->height() + 4);
+    ui->label_3->move(ori_label_3_x + 100,ui->horizontalSlider->y() - ui->label_3->height() - 1);
     ui->label_3->raise();
-    ui->label_4->move(ori_label_4_x,ui->widget->height() - ui->horizontalSlider->height() - ui->label_4->height() + 4);
+    ui->label_4->move(ori_label_4_x,ui->horizontalSlider->y() - ui->label_4->height() - 1);
 //    ui
     ui->label_4->setVisible(false);
     ui->label_4->raise();
-    ui->verticalSlider->move(QApplication::desktop()->availableGeometry().width()-ori_verticalSlider_width-0.5,ui->widget->height() - ui->verticalSlider->height() - ui->toolButton_8->height()+10);
+    ui->verticalSlider->move(QApplication::desktop()->availableGeometry().width()-ori_verticalSlider_width-0.5,ui->widget->height() - ui->verticalSlider->height() - ui->toolButton_8->height()-10);
     ui->verticalSlider->raise();
-    ui->toolButton_9->move(ori_toolbutton_9_x,ui->widget_2->height() - ui->toolButton_9->height() + 10);
+    ui->toolButton_9->move(ori_toolbutton_9_x,ui->widget_2->height() - ui->toolButton_9->height() - 10);
     ui->toolButton_9->raise();
-    ui->horizontalSlider_2->move(ori_horizontalSlider_2_x, ui->widget_2->y()+ui->widget_2->height()-ui->horizontalSlider_2->height()+10);
+    ui->horizontalSlider_2->move(ori_horizontalSlider_2_x, ui->widget_2->y()+ui->widget_2->height()-ui->horizontalSlider_2->height()-10);
     ui->horizontalSlider_2->resize(ori_horizontalSlider_2_width+100,ui->horizontalSlider_2->height());
     ui->horizontalSlider_2->raise();
     ui->toolButton_10->setText("取消全屏");
-    ui->label_5->move(ori_label_5_x + 100,ui->widget->height() -  ui->horizontalSlider->height() + 4);
+    ui->label_5->move(ori_label_5_x + 100,ui->horizontalSlider->y() - ui->label_5->height() - 1);
     ui->label_5->raise();
-    ui->label_6->move(ori_label_6_x + 100,ui->widget->height() -  ui->horizontalSlider->height() + 4);
+    ui->label_6->move(ori_label_6_x + 100,ui->horizontalSlider->y() - ui->label_6->height() - 1);
     ui->label_6->raise();
-    ui->label_7->move(ori_label_7_x + 100,ui->widget->height() -  ui->horizontalSlider->height() + 4);
+    ui->label_7->move(ori_label_7_x + 100,ui->horizontalSlider->y() - ui->label_7->height() - 1);
     ui->label_7->raise();
 
     this->isFullScreen = true;
@@ -3453,7 +3553,14 @@ void MainWindow::sleepforms(){
 }
 
 void MainWindow::threadFinished2(){
-    qDebug()<<"Yinpinle";
+    if((
+        DecodeWork2.finished == true && DecodeWorkAudio2.finished == true)){
+        recoverFromCacheFile();
+        this->m_pTimer_2->stop();
+        return;
+    }
+
+
 }
 
 void MainWindow::on_listWidget_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous)
@@ -3543,31 +3650,56 @@ void MainWindow::stoptimer(){
 }
 
 void MainWindow::playCacheFile(){
-
+    this->mediaplayer->setMedia(QUrl::fromLocalFile(""));
+    this->play();
+    notkey = true;
+    m_pTimer_2->start(4500);
     qDebug()<<"播放新东西";
     this->isCacheFile = true;
-//    QString s = QDir::currentPath()+"/01.wmv";
 //    qDebug()<<"s"<<s;
-    ui->toolButton->setVisible(false);
-    ui->horizontalSlider->setVisible(false);
-    ui->label->setVisible(false);
-    ui->label_2->setVisible(false);
-    ui->label_3->setVisible(false);
-    ui->label_4->setVisible(false);
-    ui->toolButton_2->setVisible(false);
-    ui->toolButton_3->setVisible(false);
-    ui->toolButton_4->setVisible(false);
-    ui->toolButton_5->setVisible(false);
-    ui->toolButton_6->setVisible(false);
-    ui->toolButton_7->setVisible(false);
-    ui->toolButton_8->setVisible(false);
-    ui->toolButton_10->setVisible(false);
-    ui->verticalSlider->setVisible(false);
-    ui->comboBox->setVisible(false);
+    ui->toolButton->setEnabled(false);
+    ui->horizontalSlider->setEnabled(false);
+    ui->horizontalSlider->setMouseTracking(false);
+    ui->label->setEnabled(false);
+    ui->label_2->setEnabled(false);
+    ui->label_3->setEnabled(false);
+//    ui->label_4->setEnabled(false);
+    ui->toolButton_2->setEnabled(false);
+    ui->toolButton_3->setEnabled(false);
+    ui->toolButton_4->setEnabled(false);
+    ui->toolButton_5->setEnabled(false);
+    ui->toolButton_6->setEnabled(false);
+    ui->toolButton_7->setEnabled(false);
+    ui->toolButton_8->setEnabled(false);
+    ui->toolButton_10->setEnabled(false);
+    ui->verticalSlider->setEnabled(false);
+    ui->comboBox->setEnabled(false);
     ui->listWidget->setEnabled(false);
+    DecodeWork2.SetSate(0);
+    DecodeWorkAudio2.SetSate(0);
+    DecodeWork2.LoadVideoFile(playList[current_index]);
+    DecodeWorkAudio2.LoadVideoFile(playList[current_index]);
+//            qDebug()<<"凯斯到了";
+    DecodeWork2.SetSate(1);
+    DecodeWorkAudio2.SetSate(1);
+
+    DecodeWork2.video_pack.clear();
+    DecodeWork2.over_pack.clear();
+
+    DecodeWorkAudio2.audio_pack.clear();
+    DecodeWorkAudio2.over_pack.clear();
+
+    qint64 duration = DecodeWork2.GetDuration();
+    DecodeWork2.SetSeekPos(duration);
+    DecodeWork2.start();
+    DecodeWorkAudio2.setVideoTime(duration);
+    DecodeWorkAudio2.SetSeekPos(duration);
+    DecodeWorkAudio2.start();
+
+
 
 //    mediaplayer->stop();
-    mediaplayer->setMedia(QUrl::fromLocalFile(QDir::currentPath()+"/blank.mp3"));
+//    mediaplayer->setMedia(QUrl::fromLocalFile(QDir::currentPath()+"/blank.mp3"));
 //    qDebug()<<"cache file duration"<<mediaplayer->duration();
 //    mediaplayer->play();
 //    qDebug()<<"duration of cache"<<mediaplayer->duration();
@@ -3579,27 +3711,51 @@ void MainWindow::playCacheFile(){
 
 void MainWindow::recoverFromCacheFile(){
 //    this->isCacheFile = true;
-    ui->toolButton->setVisible(true);
-    ui->horizontalSlider->setVisible(true);
-    ui->label->setVisible(true);
-    ui->label_2->setVisible(true);
-    ui->label_3->setVisible(true);
-    ui->toolButton_2->setVisible(true);
-    ui->toolButton_3->setVisible(true);
-    ui->toolButton_4->setVisible(true);
-    ui->toolButton_5->setVisible(true);
-    ui->toolButton_6->setVisible(true);
-    ui->toolButton_7->setVisible(true);
-    ui->toolButton_8->setVisible(true);
-    ui->toolButton_10->setVisible(true);
-    ui->verticalSlider->setVisible(true);
-    ui->comboBox->setVisible(true);
+    ui->toolButton->setEnabled(true);
+    ui->horizontalSlider->setEnabled(true);
+    ui->horizontalSlider->setMouseTracking(true);
+    ui->label->setEnabled(true);
+    ui->label_2->setEnabled(true);
+    ui->label_3->setEnabled(true);
+    ui->toolButton_2->setEnabled(true);
+    ui->toolButton_3->setEnabled(true);
+    ui->toolButton_4->setEnabled(true);
+    ui->toolButton_5->setEnabled(true);
+    ui->toolButton_6->setEnabled(true);
+    ui->toolButton_7->setEnabled(true);
+    ui->toolButton_8->setEnabled(true);
+    ui->toolButton_10->setEnabled(true);
+    ui->verticalSlider->setEnabled(true);
+    ui->comboBox->setEnabled(true);
     ui->listWidget->setEnabled(true);
 
     this->mediaplayer->setMedia(QUrl::fromLocalFile(playList[current_index]));
-    this->mediaplayer->setPosition(200);
-//    this->mediaplayer->play();
+//    this->mediaplayer->setPosition(200);
+    this->mediaplayer->play();
     this->isCacheFile = false;
+    this->notkey = false;
+    zero_tolerence = 0;
 
 
 }
+
+
+void MainWindow::mediaStateChanged2(QMediaPlayer::State state){
+//    qDebug()<<"state"<<state;
+//    switch (state) {
+//    case QMediaPlayer::PlayingState://Playing状态
+//        ui->toolButton->setToolTip("暂停");
+//        ui->toolButton->setIcon(QPixmap(":/images/pause.png"));
+//        break;
+//    default://Pause或者Stop状态
+//        ui->toolButton->setToolTip("播放");
+//        ui->toolButton->setIcon(QPixmap(":/images/play.png"));
+//        break;
+//    }
+}
+
+void MainWindow::on_time_timeout_2(){
+    DecodeWork2.StopPlay();
+    DecodeWorkAudio2.StopPlay();
+}
+
