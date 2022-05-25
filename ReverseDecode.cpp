@@ -57,11 +57,7 @@ void ReverseDecode::FreeRAM()
 
 
 /*
-工程: FFMPE_ReversePlay
-日期: 2021-04-06
-作者: DS小龙哥
-环境: win10 QT5.12.6 MinGW32
-功能: 加载媒体文件
+借鉴: DS小龙哥
 */
 int ReverseDecode::LoadVideoFile(QString media)
 {
