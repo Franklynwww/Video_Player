@@ -29,6 +29,7 @@ public:
     QImage GetImage();
 
    // QLabel *time_lable;
+    double video_pos;
     bool m_pause_state=false;
     qint64 m_play_time=0;
     qint64 m_start_time=0; //开始的时间
@@ -36,6 +37,8 @@ public:
     QImage src_mImage;
     QImage mImage; //记录当前的图像
     int type;
+    bool paint_finished;
+    int i = 0;
 
     QAudioOutput        *audioOutput;
     QIODevice           *streamOut;

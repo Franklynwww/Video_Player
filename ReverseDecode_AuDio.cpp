@@ -226,6 +226,21 @@ int ReverseDecode_Audio::GetSate()
 //跳转视频帧  传入的pos是毫秒单位
 void ReverseDecode_Audio::SetSeekPos(qint64 pos)
 {
+
+    AVFrame * frame_temp = av_frame_alloc();
+//    while(1){
+        AVPacket *packet = av_packet_alloc();
+        packet->data = nullptr;
+        packet->size = 0;
+        avcodec_send_packet(avct,packet);
+        while(1)
+        {
+        int ret = avcodec_receive_frame(avct,frame_temp);
+        if(ret == AVERROR_EOF){
+            avcodec_flush_buffers(avct);
+            break;
+        }
+        }
     //初始值给视频的最大值
     m_oldPosMs = format_ctx->duration;
     is_CurrentSeekPos = 1;
@@ -505,7 +520,7 @@ int ReverseDecode_Audio::StartPlayAudio()
     //seek_state=1;
 
     //表示视频加载成功
-    while (m_run)
+L:    while (m_run)
     {
         if(want_to_finished == true){
             finished = true;
@@ -689,9 +704,7 @@ int ReverseDecode_Audio::StartPlayAudio()
 
             //解码音频 frame
             //发送音频帧
-            int r1 = avcodec_send_packet(avct, &pkt);
-            qDebug()<<"res of r1"<<r1;
-            if ( r1 != 0)
+            if ( avcodec_send_packet(avct, &pkt) != 0)
             {
                 av_packet_unref(&pkt);//不成功就释放这个pkt
                 qDebug()<<"不v恒功se";
@@ -700,9 +713,7 @@ int ReverseDecode_Audio::StartPlayAudio()
 
 
             //接受后对视频帧进行解码
-            int r2 =avcodec_receive_frame(avct, SRC_Audio_pFrame);
-            qDebug()<<"res of r2"<<r2;
-            if (r2 != 0)
+            if (avcodec_receive_frame(avct, SRC_Audio_pFrame) != 0)
             {
                 av_packet_unref(&pkt);//不成功就释放这个pkt
                 qDebug()<<"不v恒功recv";
@@ -747,10 +758,7 @@ int ReverseDecode_Audio::StartPlayAudio()
             }
             qDebug()<<"转音频成功，结果为len=="<<len;
             int dst_bufsize = av_samples_get_buffer_size(0, out_channels, len, out_sample_fmt, 1);
-//            qDebug()<<"在这守护";
             QByteArray atemp =  QByteArray((const char *)out_buffer_audio, dst_bufsize);
-
-            qDebug()<<"test in audio";
 
 
 

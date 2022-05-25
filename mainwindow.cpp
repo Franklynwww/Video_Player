@@ -662,6 +662,7 @@ void MainWindow::postionChanged(qint64 position){//槽函数，触发条件：�
         zero_tolerence ++;
         qDebug()<<"zero"<<zero_tolerence;
         if(zero_tolerence == 10){
+            notkey = true;
             QMessageBox::warning(this, tr("Error"),
                                            tr("解码时间超限制，正在尝试重新载入")
                                            );
@@ -914,7 +915,9 @@ void MainWindow::handleError()
 
 void MainWindow::on_toolButton_2_clicked()
 {
+
     QString filename;
+
     QT_TRY{
         filename = QFileDialog::getOpenFileName();
         if (filename == ""){
@@ -923,6 +926,12 @@ void MainWindow::on_toolButton_2_clicked()
         if(!isValidVideoFile(filename)){
             QMessageBox::warning(this, tr("Error"),
                                            tr("打开的文件不是音频格式或不受支持的音频格式")
+                                           );
+            return;
+        }
+        if(notkey || isReverse){
+            QMessageBox::warning(this, tr("Error"),
+                                           tr("此时不支持打开文件，请稍等再打开")
                                            );
             return;
         }
@@ -2278,7 +2287,7 @@ void MainWindow::on_toolButton_8_clicked()
         }
         if(type == VIDEO){
 //            if(ui->widget_2->type == 1){
-            ui->widget_2->src_mImage = QImage();
+//            ui->widget_2->src_mImage = QImage();
             ui->widget_2->mImage = QImage();
             ui->widget_2->setVisible(true);
             ui->widget_3->setVisible(false);
@@ -3652,7 +3661,6 @@ void MainWindow::stoptimer(){
 void MainWindow::playCacheFile(){
     this->mediaplayer->setMedia(QUrl::fromLocalFile(""));
     this->play();
-    notkey = true;
     m_pTimer_2->start(4500);
     qDebug()<<"播放新东西";
     this->isCacheFile = true;

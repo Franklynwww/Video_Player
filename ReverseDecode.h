@@ -66,6 +66,7 @@ public:
     void PausePlay();
     void StopPlay();
     void LogSend(QString text);
+    bool not_over;
 
     bool want_to_finished;
 
@@ -131,6 +132,7 @@ private:
     uint8_t *out_buffer_rgb = nullptr;
     struct SwsContext *img_convert_ctx = nullptr;  //用于解码后的视频格式转换
 
+//    QImage image;
     AVCodecContext *vct;
 
 
