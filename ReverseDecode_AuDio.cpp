@@ -319,6 +319,20 @@ int ReverseDecode_Audio::DecodDataPack2()
         if(audio_tolerence>=200){
         this->want_to_finished = true;
         }
+        AVFrame * frame_temp = av_frame_alloc();
+    //    while(1){
+            AVPacket *packet = av_packet_alloc();
+            packet->data = nullptr;
+            packet->size = 0;
+            avcodec_send_packet(avct,packet);
+            while(1)
+            {
+            int ret = avcodec_receive_frame(avct,frame_temp);
+            if(ret == AVERROR_EOF){
+                avcodec_flush_buffers(avct);
+                break;
+            }
+            }
         return 1;
     }
     else{
@@ -495,6 +509,20 @@ int ReverseDecode_Audio::DecodDataPack2()
             over_pack.clear();
         }
     }
+    AVFrame * frame_temp = av_frame_alloc();
+//    while(1){
+        AVPacket *packet = av_packet_alloc();
+        packet->data = nullptr;
+        packet->size = 0;
+        avcodec_send_packet(avct,packet);
+        while(1)
+        {
+        int ret = avcodec_receive_frame(avct,frame_temp);
+        if(ret == AVERROR_EOF){
+            avcodec_flush_buffers(avct);
+            break;
+        }
+        }
     return 0;
 }
 

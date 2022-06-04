@@ -60,11 +60,13 @@ int Audio_WAVE::init(QString filename){
 }
 double Audio_WAVE::get_wave_value(int position){
 //    AVPacket packet;
+//    QString s = "";
     double avg_A = 0;
     double ret_val = 0.5;
     std::vector<std::vector<uint8_t>> samples {};
+//    s += "position"+QString::number(position)+" ";
 //       av_opt_set(format->priv_data, "tune", "zerolatency", 0);
-       av_seek_frame(format, -1, (double(position)/double(1000))*AV_TIME_BASE, AVSEEK_FLAG_ANY);
+       av_seek_frame(format, -1, (double(position)/double(1000))*AV_TIME_BASE, AVSEEK_FLAG_BACKWARD);
 //       int r = av_read_frame(format, packet);
 //       qDebug()<<packet->data;
        int flag = 0;
@@ -82,8 +84,14 @@ double Audio_WAVE::get_wave_value(int position){
            qDebug()<<"okok";
 //           int ret;
 //           avcodec_decode_audio4(codec, frame, &ret, packet);
+
            int r = avcodec_send_packet(decoder, packet);
-           qDebug()<<"r"<<r;
+//           qDebug()<<"pts"<<packet;
+           double value = av_q2d(format->streams[audio_stream_index]->time_base) * packet->pts;
+//           format->streams[audio_stream_index]->time_base) * packet.pts;
+
+           QString str = QString::number(value, 'f', 5);
+//           s += "pts"+str+" ";
            std::vector<uint8_t> bytes {};
 ////           int i= 0;
            int ret = avcodec_receive_frame(decoder, frame);
@@ -94,16 +102,55 @@ double Audio_WAVE::get_wave_value(int position){
                AVSampleFormat out_sample_fmt;
                int out_sample_rate;
                int out_channels;
-               out_channel_layout = decoder->channel_layout;
+               if(decoder->channel_layout == 0 && decoder->channels == 1){
+                   out_channel_layout = AV_CH_LAYOUT_STEREO;
+               }
+               else{
+               if(decoder->channel_layout == 0 && decoder->channels == 2){
+                   out_channel_layout = AV_CH_LAYOUT_STEREO;
+               }
+               else{
+                   out_channel_layout = decoder->channel_layout;
+               }
+               }
+
                out_sample_fmt = AV_SAMPLE_FMT_S16;
                out_sample_rate = decoder->sample_rate;
                out_channels = av_get_channel_layout_nb_channels(out_channel_layout);
-               SwrContext *swr_ctx = swr_alloc_set_opts(NULL, out_channel_layout, out_sample_fmt,out_sample_rate, decoder->channel_layout, decoder->sample_fmt, decoder->sample_rate, 0, 0);
+
+//               out_channel_layout = decoder->channel_layout;
+//               out_sample_fmt = AV_SAMPLE_FMT_S16;
+//               out_sample_rate = decoder->sample_rate;
+//               out_channels = av_get_channel_layout_nb_channels(out_channel_layout);
+               int in_channel_layout;
+               if(decoder->channel_layout == 0 && decoder->channels == 1){
+                   in_channel_layout = AV_CH_LAYOUT_MONO;
+               }
+               else{
+               if(decoder->channel_layout == 0 && decoder->channels == 2){
+                   in_channel_layout = AV_CH_LAYOUT_STEREO;
+               }
+               else{
+                   in_channel_layout = decoder->channel_layout;
+               }
+               }
+//               qDebug()<<"my_out_channel_layout"<<out_channel_layout;
+//               qDebug()<<"my_out_sample_fmt"<<out_sample_fmt;
+//               qDebug()<<"my_out_sample_rate"<<out_sample_rate;
+//               qDebug()<<"my_format_ctx->streams[audio_stream_index]->codec->channel_layout"<<in_channel_layout;
+//               qDebug()<<"my_format_ctx->streams[audio_stream_index]->codec->sample_fmt"<<decoder->sample_fmt;
+//               qDebug()<<"my_format_ctx->streams[audio_stream_index]->codec->sample_rate"<<decoder->sample_rate;
+               SwrContext *swr_ctx = swr_alloc_set_opts(NULL, out_channel_layout, out_sample_fmt,out_sample_rate, in_channel_layout, decoder->sample_fmt, decoder->sample_rate, 0, 0);
                swr_init(swr_ctx);
+//               uint8_t * pcm = (uint8_t *)av_malloc(frame->nb_samples * 2 * 2);
+
                uint8_t * pcm = new uint8_t[frame->nb_samples * 2 * 2];
                uint8_t * data[2] = {0};
                data[0] = pcm;
-               int len = swr_convert(swr_ctx,data,frame->nb_samples,(const uint8_t**)frame->data,frame->nb_samples);
+//              uint8_t * out_buffer_audio = (uint8_t *)av_malloc(MAX_AUDIO_FRAME_SIZE*2);
+//            int len = swr_convert(swr_ctx, &out_buffer_audio, MAX_AUDIO_FRAME_SIZE*2, (const uint8_t **)SRC_Audio_pFrame->data, SRC_Audio_pFrame->nb_samples);
+              qDebug()<<"frame->nb_samples"<<frame->nb_samples;
+               int len = swr_convert(swr_ctx,data,frame->nb_samples*2*2,(const uint8_t**)frame->data,frame->nb_samples);
                qDebug()<<"len"<<len;
                int sample = frame->nb_samples * 2 * 2;
                signed short *pcmData = new signed short[sample];
@@ -128,6 +175,13 @@ double Audio_WAVE::get_wave_value(int position){
 //                   qDebug()<<"min"<<min;
                    ret_val = sum;
                    qDebug()<<"ret_val"<<ret_val;
+//                   s += "ret_val"+QString::number(ret_val)+" ";
+//                   s += "\n";
+//                   QFile file("D:\\audio_test1.txt");
+//                   file.open(QIODevice::ReadWrite | QIODevice::Append);
+//                   QTextStream out(&file);//写入
+//                   out<<s;
+//                   file.close();
 
 //                   ret1 = sum;
 //                   qDebug()<<"sum"<<sum;
@@ -142,7 +196,10 @@ double Audio_WAVE::get_wave_value(int position){
 //                       qDebug()<<"倍数"<<sum/ori;
 //                   }
                }
+               delete[] pcm;
+               delete[] pcmData;
            }
+
        av_packet_unref(packet);
        return ret_val;
        }

@@ -894,6 +894,7 @@ void MainWindow::setPosition(int position){
 void MainWindow::durationChanged(qint64 duration){ //槽函数，触发条件：视频时长改变
 
     qDebug()<<"dur"<<duration;
+    media_duration = duration;
     ui->label->setText(transfer_to_std_time(duration));
     ui->horizontalSlider->setRange(0,duration); 
 //    this->play();
@@ -1731,11 +1732,11 @@ void MainWindow::on_comboBox_currentIndexChanged(const QString &arg1)
 
 void MainWindow::updateInfo(){
     ui->textBrowser->clear();
-    qDebug()<<this->mediaplayer->isMetaDataAvailable();
+    qDebug()<<"availbable"<<this->mediaplayer->isMetaDataAvailable();
 //        qDebug()<<this->mediaplayer->metaData(QMediaMetaData::AlbumTitle).toString();
     foreach(QString str,this->mediaplayer->availableMetaData()){
         QString info = str + ":";
-        qDebug()<<str<<"   :"<<this->mediaplayer->metaData(str).toString().toUtf8().data();
+        qDebug()<<"str"<<str<<"   :"<<this->mediaplayer->metaData(str).toString().toUtf8().data();
         QString  data = this->mediaplayer->metaData(str).toString().toUtf8().data();
         info += data;
         if (str == "Duration"){
@@ -1744,6 +1745,7 @@ void MainWindow::updateInfo(){
         }
         ui->textBrowser->append(info);
     }
+
 //    ui->textBrowser->setText(info);
 }
 

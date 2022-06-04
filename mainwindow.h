@@ -78,6 +78,7 @@ private:
     qint64 reverse_duration;
     qint64 pause_time;
     qint64 last_begin_to_reverse;
+    qint64 media_duration;
     QString file_reverse;
     Audio_WAVE audio_wave;
     int height;
